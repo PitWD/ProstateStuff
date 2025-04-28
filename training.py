@@ -31,13 +31,14 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.1a"
+appVersion = "0.0.2a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
 appDate = "2025-04-28"
 
 
 # Load Values from INI (quick 'n' dirty, slow but type-safe)
+# pretty messi - has_option has to control config.get
 def LoadSettings(TrainType = 'Default'):
 
     # Define the path to Settings.ini
@@ -154,6 +155,7 @@ def LoadSettings(TrainType = 'Default'):
     return iniVal
 
 
+# Convert esc-coded special keys to keyname (to esc.py)
 def KeyToFunction(key):
     escKeys ={
         '\x1bOP': 'F1',
@@ -550,6 +552,7 @@ def run_loop(timing):
     term_height = term_size.lines
     loop_cnt = 0
 
+    # Print "Press ENTER / SPACE"
     if iniVal['Italic']:
         escSetItalic(1)
     PrintAtPos(iniVal['msg_press_enter_space'], 22, term_height - 5 )
@@ -606,7 +609,7 @@ loop_time = 0
 loop_max_description = 0
 loop_act_description = 0
 
-while loop_state > 0 and loop_state < 4:
+while loop_state < 4:
     escCLS()
     # Get terminal size
     term_size = escGetTerminalSize()
@@ -621,7 +624,7 @@ while loop_state > 0 and loop_state < 4:
     PrintAtPos(strHeader, 0, 0)
     escSetInverted(0)
 
-    # print loop of loop_repeat  &  action_cnt of action_len  &  action time left 
+    # print description/placeholder for loop of loop_repeat  &  action_cnt of action_len  &  action time left 
     if iniVal['Bold']:
         escSetBold(1)
     PrintAtPos("  Time:", 9, term_height - 5)
@@ -716,26 +719,42 @@ while loop_state > 0 and loop_state < 4:
                 escResetStyle()
 
                 # print loop of loop_repeat  &  action_cnt of action_len
-
                 PrintAtPos(action_cnt, 17, term_height - 3, 3, 1, '0')
                 PrintAtPos(action_len, 23, term_height - 3, 3, 1, '0')
                 PrintAtPos((loop + 1), 17, term_height - 2, 3, 1, '0')
                 PrintAtPos(loop_repeat, 23, term_height - 2, 3, 1, '0')
 
-                # Run the timing loop for the specified time
+                # Run the timing loop for the specified time 
+                escSetColor(cGreen, cBg)
                 loop_time = run_loop(action_time)
+                escResetColor()
 
                 # Clear the timer - text
                 PrintAtPos(' ' * (term_width - 18), 17, term_height - 5 )
+                # Clear the action and description
+                for i in range(0, loop_max_description + 2):
+                        PrintAtPos(' ', 9, 5 + i, term_width - 10)
 
-                if iniVal['automatic']:
-                    PrintAtPos(iniVal['msg_press_enter_space'], 22, term_height - 5 )
-                    run_loop(iniVal['auto_delay_time'])
-                else:
-                    PrintAtPos({iniVal['msg_press_enter']}, 17, term_height - 5 )
+                if action_cnt < action_len and not action == '10' and not action == '50':
+                    # Pause between actions
+                    escSetColor(cBlue, cBg)
+                    if iniVal['automatic']:
+                        # PrintAtPos(iniVal['msg_press_enter_space'], 22, term_height - 5 )
+                        run_loop(iniVal['auto_delay_time'])
+                    else:
+                        PrintAtPos({iniVal['msg_press_enter']}, 17, term_height - 5 )
+                    escResetColor()
 
-                PrintAtPos(" " * (term_width - 18), 17, term_height - 5 )
-                                  
+    # Clear Procedure line
+    PrintAtPos(' ' * (term_width - 1), 0, 3, term_width)
+    if loop_state < 3:
+        # Pause between Procedures (Start -> End)
+        if iniVal['automatic']:
+            run_loop(int(iniVal['auto_delay_time'] * 1.5))
+        else:
+            PrintAtPos({iniVal['msg_press_enter']}, 17, term_height - 5 )
+
+
     loop_state += 1
 
 escCLS()
