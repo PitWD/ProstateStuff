@@ -423,12 +423,13 @@ while loop_state > 0 and loop_state < 4:
         loop_repeat = iniVal['end_repeat']
 
     for loop in range(loop_repeat):
-        if loop_list != []:
-            # count of elements in loop_list
-            action_len = len(loop_list)
+        # count of elements in loop_list
+        action_len = len(loop_list)
+        if action_len > 0:
             action_cnt = 0
             # Loop the sequences
             for action in loop_list:
+                action_cnt += 1
                 if action == 'Bl':
                     action_time = iniVal['blink_time']
                     action_text_long = TextToLines(iniVal['long_blink'], term_width - 20)
@@ -484,7 +485,7 @@ while loop_state > 0 and loop_state < 4:
 
                 PrintAtPos(action_cnt, 17, term_height - 3, 3, 1, '0')
                 PrintAtPos(action_len, 23, term_height - 3, 3, 1, '0')
-                PrintAtPos(loop, 17, term_height - 2, 3, 1, '0')
+                PrintAtPos((loop + 1), 17, term_height - 2, 3, 1, '0')
                 PrintAtPos(loop_repeat, 23, term_height - 2, 3, 1, '0')
 
                 # Run the timing loop for the specified time
@@ -501,6 +502,6 @@ while loop_state > 0 and loop_state < 4:
 
                 PrintAtPos(" " * (term_width - 18), 17, term_height - 5 )
                                   
-        loop_state += 1
+    loop_state += 1
 
 
