@@ -31,14 +31,13 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.2a"
+appVersion = "0.0.3a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
-appDate = "2025-04-28"
+appDate = "2025-04-29"
 
 
-# Load Values from INI (quick 'n' dirty, slow but type-safe)
-# pretty messi - has_option has to control config.get
+# Load Values from INI (quick 'n' dirty, slow, case sensitive but type-safe)
 def LoadSettings(TrainType = 'Default'):
 
     # Define the path to Settings.ini
@@ -52,27 +51,27 @@ def LoadSettings(TrainType = 'Default'):
 
     # Values from Settings.ini
     iniVal = {
-        'version': config.get('Global', 'Version' if config.has_option('Global', 'Version') else '0.0.1a'),
-        'debug': config.get('Global', 'Debug' if config.has_option('Global', 'Debug') else '1'),
-        'blink_time': config.get(TrainType, 'Blink' if config.has_option(TrainType, 'Blink') else '60'),
-        'butterfly_time': config.get(TrainType, 'Butterfly' if config.has_option(TrainType, 'Butterfly') else '10'),
-        'percent10_time': config.get(TrainType, '10Percent' if config.has_option(TrainType, '10Percent') else '10'),
-        'percent50_time': config.get(TrainType, '50Percent' if config.has_option(TrainType, '50Percent') else '10'),
-        'percent80_time': config.get(TrainType, '80Percent' if config.has_option(TrainType, '80Percent') else '10'),
-        'start_sequence': config.get(TrainType, 'Start' if config.has_option(TrainType, 'Start') else 'Bu_Bl'),
-        'start_repeat': config.get(TrainType, 'RepeatStart' if config.has_option(TrainType, 'RepeatStart') else '2'),
-        'main_sequence': config.get(TrainType, 'Main' if config.has_option(TrainType, 'Main') else 'Bu_10_50_80_Bu_10_50_80_Bu_Bl'),
-        'main_repeat': config.get(TrainType, 'RepeatMain' if config.has_option(TrainType, 'RepeatMain') else '4'),
-        'end_sequence': config.get(TrainType, 'End' if config.has_option(TrainType, 'End') else 'Bu'),
-        'end_repeat': config.get(TrainType, 'RepeatEnd' if config.has_option(TrainType, 'RepeatEnd') else '1'),
-        'language': config.get('Global', 'Language' if config.has_option('Global', 'Language') else 'EN'),
-        'automatic': config.get('Global', 'Automatic' if config.has_option('Global', 'Automatic') else '1'),
-        'auto_delay_time': config.get('Global', 'AutoDelayTime' if config.has_option('Global', 'AutoDelayTime') else '3'),
-        'DoubleHeight': config.get('Global', 'DoubleHeight' if config.has_option('Global', 'DoubleHeight') else '0'),
-        'DoubleWidth': config.get('Global', 'DoubleWidth' if config.has_option('Global', 'DoubleWidth') else '0'),
-        'Bold': config.get('Global', 'Bold' if config.has_option('Global', 'Bold') else '0'),
-        'Italic': config.get('Global', 'Italic' if config.has_option('Global', 'Italic') else '0'),
-        'Underline': config.get('Global', 'Underline' if config.has_option('Global', 'Underline') else '0')
+        'version': config.get('Global', 'Version') if config.has_option('Global', 'Version') else '1.0.0',
+        'debug': config.get('Global', 'Debug') if config.has_option('Global', 'Debug') else '1',
+        'blink_time': config.get(TrainType, 'Blink') if config.has_option(TrainType, 'Blink') else '60',
+        'butterfly_time': config.get(TrainType, 'Butterfly') if config.has_option(TrainType, 'Butterfly') else '10',
+        'percent10_time': config.get(TrainType, '10Percent') if config.has_option(TrainType, '10Percent') else '10',
+        'percent50_time': config.get(TrainType, '50Percent') if config.has_option(TrainType, '50Percent') else '10',
+        'percent80_time': config.get(TrainType, '80Percent') if config.has_option(TrainType, '80Percent') else '10',
+        'start_sequence': config.get(TrainType, 'Start') if config.has_option(TrainType, 'Start') else 'Bu_Bl',
+        'start_repeat': config.get(TrainType, 'RepeatStart') if config.has_option(TrainType, 'RepeatStart') else '2',
+        'main_sequence': config.get(TrainType, 'Main') if config.has_option(TrainType, 'Main') else 'Bu_10_50_80_Bu_10_50_80_Bu_Bl',
+        'main_repeat': config.get(TrainType, 'RepeatMain') if config.has_option(TrainType, 'RepeatMain') else '6',
+        'end_sequence': config.get(TrainType, 'End') if config.has_option(TrainType, 'End') else 'Bu',
+        'end_repeat': config.get(TrainType, 'RepeatEnd') if config.has_option(TrainType, 'RepeatEnd') else '1',
+        'language': config.get('Global', 'Language') if config.has_option('Global', 'Language') else 'EN',
+        'automatic': config.get('Global', 'Automatic') if config.has_option('Global', 'Automatic') else '1',
+        'auto_delay_time': config.get('Global', 'AutoDelayTime') if config.has_option('Global', 'AutoDelayTime') else '3',
+        'DoubleHeight': config.get('Global', 'DoubleHeight') if config.has_option('Global', 'DoubleHeight') else '0',
+        'DoubleWidth': config.get('Global', 'DoubleWidth') if config.has_option('Global', 'DoubleWidth') else '0',
+        'Bold': config.get('Global', 'Bold') if config.has_option('Global', 'Bold') else '0',
+        'Italic': config.get('Global', 'Italic') if config.has_option('Global', 'Italic') else '0',
+        'Underline': config.get('Global', 'Underline') if config.has_option('Global', 'Underline') else '0'
     }
 
     # Define the path to Language.ini
@@ -89,21 +88,21 @@ def LoadSettings(TrainType = 'Default'):
 
     # Values from Language.ini
     lang_values = {
-        'short_blink': config.get(LangShort, 'Blink' if config.has_option(LangShort, 'Blink') else 'Blink'),
-        'short_butterfly': config.get(LangShort, 'Butterfly' if config.has_option(LangShort, 'Butterfly') else 'Butterfly/Windshield Wiper'),
-        'short_10percent': config.get(LangShort, '10Percent' if config.has_option(LangShort, '10Percent') else '10% Tension'),
-        'short_50percent': config.get(LangShort, '50Percent' if config.has_option(LangShort, '50Percent') else '50% Tension'),
-        'short_80percent': config.get(LangShort, '80Percent' if config.has_option(LangShort, '80Percent') else '80% Tension'),
-        'long_blink': config.get(LangLong, 'Blink' if config.has_option(LangLong, 'Blink') else 'Tighten/Relax - As if you want to interrupt minimal urine flow.'),
-        'long_butterfly': config.get(LangLong, 'Butterfly' if config.has_option(LangLong, 'Butterfly') else 'Relaxed left and right, or opening and closing the legs as if suppressing the urge to urinate.'),
-        'long_10percent': config.get(LangLong, '10Percent' if config.has_option(LangLong, '10Percent') else 'Hold the tension like Blinking - As if you want to interrupt minimal urine flow.'),
-        'long_50percent': config.get(LangLong, '50Percent' if config.has_option(LangLong, '50Percent') else 'Hold the tension like 50% Tension - As if you want to interrupt medium urine flow.'),
-        'long_80percent': config.get(LangLong, '80Percent' if config.has_option(LangLong, '80Percent') else 'Hold the tension like 80% Tension - As if you want to interrupt strong urine flow. The anal sphincter is only activated here.'),
-        'start_procedure': config.get(LangProcedure, 'Start' if config.has_option(LangProcedure, 'Start') else 'Start procedure'),
-        'main_procedure': config.get(LangProcedure, 'Main' if config.has_option(LangProcedure, 'Main') else 'Main procedure'),
-        'end_procedure': config.get(LangProcedure, 'End' if config.has_option(LangProcedure, 'End') else 'End procedure'),
-        'msg_press_enter': config.get(LangMessage, 'PressEnter' if config.has_option(LangMessage, 'PressEnter') else 'Press Enter to continue...'),
-        'msg_press_enter_space': config.get(LangMessage, 'PressEnterSpace' if config.has_option(LangMessage, 'PressEnterSpace') else 'Press ENTER to cancel, SPACE to pause')
+        'short_blink': config.get(LangShort, 'Blink') if config.has_option(LangShort, 'Blink') else 'Blink',
+        'short_butterfly': config.get(LangShort, 'Butterfly') if config.has_option(LangShort, 'Butterfly') else 'Butterfly/Windshield Wiper',
+        'short_10percent': config.get(LangShort, '10Percent') if config.has_option(LangShort, '10Percent') else '10% Tension',
+        'short_50percent': config.get(LangShort, '50Percent') if config.has_option(LangShort, '50Percent') else '50% Tension',
+        'short_80percent': config.get(LangShort, '80Percent') if config.has_option(LangShort, '80Percent') else '80% Tension',
+        'long_blink': config.get(LangLong, 'Blink') if config.has_option(LangLong, 'Blink') else 'Tighten/Relax - As if you want to interrupt minimal urine flow.',
+        'long_butterfly': config.get(LangLong, 'Butterfly') if config.has_option(LangLong, 'Butterfly') else 'Relaxed left and right, or opening and closing the legs as if suppressing the urge to urinate.',
+        'long_10percent': config.get(LangLong, '10Percent') if config.has_option(LangLong, '10Percent') else 'Hold the tension like Blinking - As if you want to interrupt minimal urine flow.',
+        'long_50percent': config.get(LangLong, '50Percent') if config.has_option(LangLong, '50Percent') else 'Hold the tension like 50% Tension - As if you want to interrupt medium urine flow.',
+        'long_80percent': config.get(LangLong, '80Percent') if config.has_option(LangLong, '80Percent') else 'Hold the tension like 80% Tension - As if you want to interrupt strong urine flow. The anal sphincter is only activated here.',
+        'start_procedure': config.get(LangProcedure, 'Start') if config.has_option(LangProcedure, 'Start') else 'Start procedure',
+        'main_procedure': config.get(LangProcedure, 'Main') if config.has_option(LangProcedure, 'Main') else 'Main procedure',
+        'end_procedure': config.get(LangProcedure, 'End') if config.has_option(LangProcedure, 'End') else 'End procedure',
+        'msg_press_enter': config.get(LangMessage, 'PressEnter') if config.has_option(LangMessage, 'PressEnter') else 'Press Enter to continue...',
+        'msg_press_enter_space': config.get(LangMessage, 'PressEnterSpace') if config.has_option(LangMessage, 'PressEnterSpace') else 'Press ENTER to cancel, SPACE to pause'
     }
 
     # Combine iniVal and lang_values
@@ -453,6 +452,15 @@ def escResetColor():
 def escGetTerminalSize():
     return os.get_terminal_size()
 
+# Disable cursor
+def escCursorVisible(state):
+    if state:
+        c = 'h'
+    else:
+        c = 'l'
+    
+    print(f'\033[?25{c}', end='', flush=True)
+
 
 ### Set cursor style ### (all 7 to esc.py)
 def escSetStyle(style):
@@ -552,6 +560,8 @@ def run_loop(timing):
     term_height = term_size.lines
     loop_cnt = 0
 
+
+
     # Print "Press ENTER / SPACE"
     if iniVal['Italic']:
         escSetItalic(1)
@@ -579,7 +589,7 @@ def run_loop(timing):
         if loop_cnt > 4:
             if iniVal['Bold']:
                 escSetBold(1)
-            PrintAtPos(f"{int(timing - (time.time() - start_time))}", 17, term_height - 5, 3, 1, ' ')
+            PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 17, term_height - 5, 3, 1, ' ')
             escResetStyle()
             loop_cnt = 0
     return time.time() - start_time
@@ -608,6 +618,8 @@ loop_cnt = 0
 loop_time = 0
 loop_max_description = 0
 loop_act_description = 0
+
+escCursorVisible(0)  # Hide cursor
 
 while loop_state < 4:
     escCLS()
@@ -757,5 +769,6 @@ while loop_state < 4:
 
     loop_state += 1
 
+escCursorVisible(1)  # Show cursor
 escCLS()
 
