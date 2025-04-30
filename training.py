@@ -31,7 +31,7 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.4a"
+appVersion = "0.0.5a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
 appDate = "2025-04-30"
@@ -476,20 +476,10 @@ def escCLS():
 
 # Set cursor position (to esc.py)
 def escSetCursorPos(x, y):
-    #if os.name == 'nt':  # Windows
-        #os.system(f'echo \033[{y};{x}H')
-    #else:  # Linux and MacOS
     print(f'\033[{y};{x}H', end='', flush=True)
 
 # Set cursor color - 16 Colors (to esc.py)
 def escSetColor(fg, bg):
-    #if os.name == 'nt':  # Windows
-     #   os.system(f'echo \033[{30 + (fg % 8)}m\033[{40 + (bg % 8)}m')
-      #  if fg >= 8:  # Bright foreground
-       #     os.system('echo \033[1m')
-        #if bg >= 8:  # Bright background
-         #   os.system('echo \033[5m')  # Optional: Blink for bright background
-    #else:  # Linux and MacOS
     print(f'\033[{30 + (fg % 8)}m\033[{40 + (bg % 8)}m', end='', flush=True)
     if fg >= 8:  # Bright foreground
         print('\033[1m', end='', flush=True)
@@ -498,16 +488,10 @@ def escSetColor(fg, bg):
 
 # Set cursor color - 255 Colors (to esc.py)
 def escSet255Color(fg, bg):
-    #if os.name == 'nt':  # Windows
-     #   os.system(f'echo \033[38;5;{fg}m\033[48;5;{bg}m')
-    #else:  # Linux and MacOS
     print(f'\033[38;5;{fg}m\033[48;5;{bg}m', end='', flush=True)
 
 # Reset colors to terminal standard (to esc.py)
 def escResetColor():
-    #if os.name == 'nt':  # Windows
-     #   os.system('echo \033[0m')
-    #else:  # Linux and MacOS
     print('\033[0m', end='', flush=True)
 
 # Get Terminal Size (to esc.py)
@@ -550,10 +534,7 @@ def escSetInverted(state):
 
 ### Set cursor height/width ### (all 5 to esc.py)
 def escSetDoubleHW(state):
-    if os.name == 'nt':  # Windows
-        os.system(f'echo \033#{state}')
-    else:  # Linux and MacOS
-        os.system(f'\033#{state}')
+    print(f'\033#{state}')
 # Reset cursor double height and width
 def escResetDoubleHW():
     escSetDoubleHW(5)
@@ -576,7 +557,7 @@ def PrintAtPos(text, x, y, clear = 0, right = 0, space = ' '):
     if clear > 0:
         print(space * clear, end='', flush=True)
         if right > 0:
-            # Right align the text
+            # Right align the text (need improvement - real reverse print)
             x += clear - len(text)
         escSetCursorPos(x, y)
     print(text, end='', flush=True)
@@ -622,8 +603,6 @@ def run_loop(timing):
     term_height = term_size.lines
     loop_cnt = 0
 
-
-
     # Print "Press ENTER / SPACE"
     if iniVal['Italic']:
         escSetItalic(1)
@@ -660,10 +639,9 @@ def run_loop(timing):
 # Main program
 
 # Get parameters from the command line
+TrainType = 'Default'
 if len(sys.argv) > 1:
     TrainType = sys.argv[1]
-else:
-    TrainType = 'Default'
 
 # Load ini-values from the configuration file
 iniVal = LoadSettings(TrainType)
