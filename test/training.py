@@ -130,7 +130,7 @@ def LoadSettings(TrainType = 'Default'):
         'short_10percent': config.get(LangShort, '10Percent') if config.has_option(LangShort, '10Percent') else '"10%% Tension"',
         'short_50percent': config.get(LangShort, '50Percent') if config.has_option(LangShort, '50Percent') else '"50%% Tension"',
         'short_80percent': config.get(LangShort, '80Percent') if config.has_option(LangShort, '80Percent') else '"80%% Tension"',
-        'long_blink': config.get(LangLong, 'Blink') if config.has_option(LangLong, 'Blink') else '"Tighten / Relax - As if you want to interrupt minimal urine flow."',
+        'long_blink': config.get(LangLong, 'Blink') if config.has_option(LangLong, 'Blink') else '"Tighten/Relax - As if you want to interrupt minimal urine flow."',
         'long_butterfly': config.get(LangLong, 'Butterfly') if config.has_option(LangLong, 'Butterfly') else '"Relaxed left and right, or opening and closing the legs as if suppressing the urge to urinate."',
         'long_10percent': config.get(LangLong, '10Percent') if config.has_option(LangLong, '10Percent') else '"Hold the tension like Blinking - As if you want to interrupt minimal urine flow."',
         'long_50percent': config.get(LangLong, '50Percent') if config.has_option(LangLong, '50Percent') else '"Hold the tension like 50%% Tension - As if you want to interrupt medium urine flow."',
@@ -809,7 +809,7 @@ while loop_state < 4:
                 for i in range(0, loop_max_description + 2):
                         PrintAtPos(' ', 9, 5 + i, term_width - 10)
 
-                if ((action_cnt < action_len) or (loop + 1 < loop_repeat)) and not action == '10' and not action == '50':
+                if action_cnt < action_len and not action == '10' and not action == '50':
                     # Pause between actions
                     escSetColor(cBlue, cBg)
                     if iniVal['automatic']:
