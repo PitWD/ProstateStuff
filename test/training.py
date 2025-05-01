@@ -31,10 +31,10 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.4a"
+appVersion = "0.0.5a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
-appDate = "2025-04-30"
+appDate = "2025-05-01"
 
 
 # Load Values from INI (quick 'n' dirty, slow, case sensitive but type-safe)
@@ -57,7 +57,7 @@ def LoadSettings(TrainType = 'Default'):
     # Values from Settings.ini
     iniVal = {
         'version': config.get('Global', 'Version') if config.has_option('Global', 'Version') else '1.0.0',
-        'debug': config.get('Global', 'Debug') if config.has_option('Global', 'Debug') else '1',
+        'debug': config.get('Global', 'Debug') if config.has_option('Global', 'Debug') else '0',
         'blink_time': config.get(TrainType, 'Blink') if config.has_option(TrainType, 'Blink') else '60',
         'butterfly_time': config.get(TrainType, 'Butterfly') if config.has_option(TrainType, 'Butterfly') else '10',
         'percent10_time': config.get(TrainType, '10Percent') if config.has_option(TrainType, '10Percent') else '10',
@@ -73,7 +73,9 @@ def LoadSettings(TrainType = 'Default'):
         'automatic': config.get('Global', 'Automatic') if config.has_option('Global', 'Automatic') else '1',
         'auto_delay_time': config.get('Global', 'AutoDelayTime') if config.has_option('Global', 'AutoDelayTime') else '3',
         'DoubleHeight': config.get('Global', 'DoubleHeight') if config.has_option('Global', 'DoubleHeight') else '0',
+        'SimDoubleHeight': config.get('Global', 'SimDoubleHeight') if config.has_option('Global', 'SimDoubleHeight') else '0',
         'DoubleWidth': config.get('Global', 'DoubleWidth') if config.has_option('Global', 'DoubleWidth') else '0',
+        'SimDoubleWidth': config.get('Global', 'SimDoubleWidth') if config.has_option('Global', 'SimDoubleWidth') else '0',
         'Bold': config.get('Global', 'Bold') if config.has_option('Global', 'Bold') else '0',
         'Italic': config.get('Global', 'Italic') if config.has_option('Global', 'Italic') else '0',
         'Underline': config.get('Global', 'Underline') if config.has_option('Global', 'Underline') else '0'
@@ -90,7 +92,9 @@ def LoadSettings(TrainType = 'Default'):
             config.set('Global', 'Automatic', iniVal['automatic'])
             config.set('Global', 'AutoDelayTime', iniVal['auto_delay_time'])
             config.set('Global', 'DoubleHeight', iniVal['DoubleHeight'])
+            config.set('Global', 'SimDoubleHeight', iniVal['SimDoubleHeight'])
             config.set('Global', 'DoubleWidth', iniVal['DoubleWidth'])
+            config.set('Global', 'SimDoubleWidth', iniVal['SimDoubleWidth'])
             config.set('Global', 'Bold', iniVal['Bold'])
             config.set('Global', 'Italic', iniVal['Italic'])
             config.set('Global', 'Underline', iniVal['Underline'])
@@ -130,7 +134,7 @@ def LoadSettings(TrainType = 'Default'):
         'short_10percent': config.get(LangShort, '10Percent') if config.has_option(LangShort, '10Percent') else '"10%% Tension"',
         'short_50percent': config.get(LangShort, '50Percent') if config.has_option(LangShort, '50Percent') else '"50%% Tension"',
         'short_80percent': config.get(LangShort, '80Percent') if config.has_option(LangShort, '80Percent') else '"80%% Tension"',
-        'long_blink': config.get(LangLong, 'Blink') if config.has_option(LangLong, 'Blink') else '"Tighten/Relax - As if you want to interrupt minimal urine flow."',
+        'long_blink': config.get(LangLong, 'Blink') if config.has_option(LangLong, 'Blink') else '"Tighten / Relax - As if you want to interrupt minimal urine flow."',
         'long_butterfly': config.get(LangLong, 'Butterfly') if config.has_option(LangLong, 'Butterfly') else '"Relaxed left and right, or opening and closing the legs as if suppressing the urge to urinate."',
         'long_10percent': config.get(LangLong, '10Percent') if config.has_option(LangLong, '10Percent') else '"Hold the tension like Blinking - As if you want to interrupt minimal urine flow."',
         'long_50percent': config.get(LangLong, '50Percent') if config.has_option(LangLong, '50Percent') else '"Hold the tension like 50%% Tension - As if you want to interrupt medium urine flow."',
@@ -166,6 +170,8 @@ def LoadSettings(TrainType = 'Default'):
             config.set(LangMessage, 'PressEnter', lang_values['msg_press_enter'])
             config.set(LangMessage, 'PressEnterSpace', lang_values['msg_press_enter_space'])
             config.write(configfile)
+        # Restart App for right parsing %%
+        os.execv(sys.executable, ['python'] + sys.argv)
 
     # Combine iniVal and lang_values
     iniVal.update(lang_values)
@@ -184,7 +190,9 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['automatic'] = bool(int(iniVal['automatic']))
     iniVal['debug'] = bool(int(iniVal['debug']))
     iniVal['DoubleHeight'] = bool(int(iniVal['DoubleHeight']))
+    iniVal['SimDoubleHeight'] = bool(int(iniVal['SimDoubleHeight']))
     iniVal['DoubleWidth'] = bool(int(iniVal['DoubleWidth']))
+    iniVal['SimDoubleWidth'] = bool(int(iniVal['SimDoubleWidth']))
     iniVal['Bold'] = bool(int(iniVal['Bold']))
     iniVal['Italic'] = bool(int(iniVal['Italic']))
     iniVal['Underline'] = bool(int(iniVal['Underline']))
@@ -433,7 +441,6 @@ def KeyToFunction(key):
 # Look for Keypress - returns key or "" (to esc.py)
 def GetKeyPress():
 
-
     if os.name == 'nt':  # Windows
         import msvcrt
         if msvcrt.kbhit():
@@ -476,20 +483,10 @@ def escCLS():
 
 # Set cursor position (to esc.py)
 def escSetCursorPos(x, y):
-    #if os.name == 'nt':  # Windows
-        #os.system(f'echo \033[{y};{x}H')
-    #else:  # Linux and MacOS
     print(f'\033[{y};{x}H', end='', flush=True)
 
 # Set cursor color - 16 Colors (to esc.py)
 def escSetColor(fg, bg):
-    #if os.name == 'nt':  # Windows
-     #   os.system(f'echo \033[{30 + (fg % 8)}m\033[{40 + (bg % 8)}m')
-      #  if fg >= 8:  # Bright foreground
-       #     os.system('echo \033[1m')
-        #if bg >= 8:  # Bright background
-         #   os.system('echo \033[5m')  # Optional: Blink for bright background
-    #else:  # Linux and MacOS
     print(f'\033[{30 + (fg % 8)}m\033[{40 + (bg % 8)}m', end='', flush=True)
     if fg >= 8:  # Bright foreground
         print('\033[1m', end='', flush=True)
@@ -498,16 +495,10 @@ def escSetColor(fg, bg):
 
 # Set cursor color - 255 Colors (to esc.py)
 def escSet255Color(fg, bg):
-    #if os.name == 'nt':  # Windows
-     #   os.system(f'echo \033[38;5;{fg}m\033[48;5;{bg}m')
-    #else:  # Linux and MacOS
     print(f'\033[38;5;{fg}m\033[48;5;{bg}m', end='', flush=True)
 
 # Reset colors to terminal standard (to esc.py)
 def escResetColor():
-    #if os.name == 'nt':  # Windows
-     #   os.system('echo \033[0m')
-    #else:  # Linux and MacOS
     print('\033[0m', end='', flush=True)
 
 # Get Terminal Size (to esc.py)
@@ -530,7 +521,6 @@ def escSetStyle(style):
 #Reset cursor style
 def escResetStyle():
     escSetStyle(0)
-
 # Set cursor bold
 def escSetBold(state):
     escSetStyle(1 if state else 22)
@@ -550,14 +540,10 @@ def escSetInverted(state):
 
 ### Set cursor height/width ### (all 5 to esc.py)
 def escSetDoubleHW(state):
-    if os.name == 'nt':  # Windows
-        os.system(f'echo \033#{state}')
-    else:  # Linux and MacOS
-        os.system(f'\033#{state}')
+    print(f'\033#{state}', end='', flush=True)
 # Reset cursor double height and width
 def escResetDoubleHW():
     escSetDoubleHW(5)
-
 # Set cursor double height - DECDHL top half
 def escSetDoubleHeightTop():
     escSetDoubleHW(3)
@@ -576,7 +562,7 @@ def PrintAtPos(text, x, y, clear = 0, right = 0, space = ' '):
     if clear > 0:
         print(space * clear, end='', flush=True)
         if right > 0:
-            # Right align the text
+            # Right align the text (need improvement - real reverse print)
             x += clear - len(text)
         escSetCursorPos(x, y)
     print(text, end='', flush=True)
@@ -611,7 +597,45 @@ def TextToLines(text, width):
             lines.append(current_line)
     return lines
 
-# Run loop for 'time' seconds - return runtime
+# Make text double length by adding a space to each char
+def DoubleText(text):
+    text = str(text)
+    double_text = ""
+    for char in text:
+        double_text += char + ' '
+    return double_text[:-1]  # Remove last space
+
+# Print double height text
+def PrintDoubleHeight (text, x, y, clear = 0, right = 0, space = ' '):
+
+    if iniVal['DoubleHeight']:
+        escSetCursorPos(x, y - 1)
+        escSetDoubleHeightTop()
+    else:
+        text = DoubleText(text)
+
+
+    PrintAtPos(text, x, y - 1, clear, right, space)
+
+    if iniVal['DoubleHeight']:
+        escSetCursorPos(x, y)
+        escSetDoubleHeightBottom()
+
+    PrintAtPos(text, x, y, clear, right, space)
+
+# Print double width text
+def PrintDoubleWidth (text, x, y, clear = 0, right = 0, space = ' '):
+
+    if iniVal['DoubleWidth']:
+        escSetCursorPos(x, y)
+        escSetDoubleWidth()
+    else:
+        text = DoubleText(text)
+    
+    PrintAtPos(text, x, y, clear, right, space)
+    
+
+# Run loop for 'timing' seconds - return runtime
 def run_loop(timing):
     # Space pauses/continues the loop
     # Enter stops the loop - return 0
@@ -622,12 +646,10 @@ def run_loop(timing):
     term_height = term_size.lines
     loop_cnt = 0
 
-
-
     # Print "Press ENTER / SPACE"
     if iniVal['Italic']:
         escSetItalic(1)
-    PrintAtPos(iniVal['msg_press_enter_space'], 22, term_height - 5 )
+    PrintAtPos(iniVal['msg_press_enter_space'], 23, term_height - 5 )
     escResetStyle()
 
     while time.time() - start_time < timing:
@@ -651,7 +673,7 @@ def run_loop(timing):
         if loop_cnt > 4:
             if iniVal['Bold']:
                 escSetBold(1)
-            PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 17, term_height - 5, 3, 1, ' ')
+            PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
             escResetStyle()
             loop_cnt = 0
     return time.time() - start_time
@@ -660,10 +682,9 @@ def run_loop(timing):
 # Main program
 
 # Get parameters from the command line
+TrainType = 'Default'
 if len(sys.argv) > 1:
     TrainType = sys.argv[1]
-else:
-    TrainType = 'Default'
 
 # Load ini-values from the configuration file
 iniVal = LoadSettings(TrainType)
@@ -683,6 +704,7 @@ loop_act_description = 0
 
 escCursorVisible(0)  # Hide cursor
 
+# Training Loop
 while loop_state < 4:
     escCLS()
     # Get terminal size
@@ -695,32 +717,49 @@ while loop_state < 4:
     escSetBold(1)
     strHeader = f"{appName} {appVersion} - {appCopyright} {appAuthor} - {appDate}"
     strHeader = CenterText(strHeader, term_width)
-    PrintAtPos(strHeader, 0, 0)
+    PrintAtPos(strHeader, 1, 1)
     escSetInverted(0)
 
     # print description/placeholder for loop of loop_repeat  &  action_cnt of action_len  &  action time left 
     if iniVal['Bold']:
         escSetBold(1)
-    PrintAtPos("  Time:", 9, term_height - 5)
-    PrintAtPos("Action:     /    ", 9, term_height - 3)
-    PrintAtPos("Repeat:     /    ", 9, term_height - 2)
+    PrintAtPos("  Time:", 10, term_height - 5)
+    PrintAtPos("Action:     /    ", 10, term_height - 3)
+    PrintAtPos("Repeat:     /    ", 10, term_height - 2)
     escResetStyle()
 
-    # print procedure
+    # text - actual procedure
     if loop_state == 1:
         strProcedure = iniVal['start_procedure']
     elif loop_state == 2:
         strProcedure = iniVal['main_procedure']
     else:
         strProcedure = iniVal['end_procedure']
-    strProcedure = CenterText(strProcedure, term_width)
-    if iniVal['Bold']:
-        escSetBold(1)
-    if iniVal['Italic']:
-        escSetItalic(1)
-    if iniVal['Underline']:
-        escSetUnderline(1)
-    PrintAtPos(strProcedure, 0, 3, term_width)
+
+    # x, depending on settings DoubleWidth
+    if iniVal['DoubleWidth']:
+        # Terminal can Double
+        x = (term_width // 2 + 3 - len(strProcedure)) // 2
+    elif iniVal['SimDoubleWidth']:
+        # Simulate Double
+        x = (term_width + 2 - len(strProcedure) * 2) // 2
+    else:
+        # No Double
+        strProcedure = CenterText(strProcedure, term_width)
+    if not iniVal['DoubleWidth']:
+        # just for simulated and no double
+        if iniVal['Italic']:
+            escSetItalic(1)
+        if iniVal['Bold']:
+            escSetBold(1)
+
+    if iniVal['DoubleWidth'] or iniVal['SimDoubleWidth']:
+        # Print double width text
+        PrintDoubleWidth(strProcedure, x, 3)
+    else:
+        # Print normal text
+        PrintAtPos(strProcedure, 1, 3)
+
     escResetStyle()
 
     if loop_state == 1:
@@ -764,15 +803,32 @@ while loop_state < 4:
                 else:
                     # Unknown action - fatal error
                     escSetColor(cRed, cBg)
-                    PrintAtPos(f"Unknown action: {action} in sequence {strProcedure}", 0, term_height - 1)
+                    PrintAtPos(f"Unknown action: {action} in sequence {strProcedure}", 1, term_height - 1)
                     escResetColor()
                     sys.exit(1)
 
                 # Print the action
-                strAction = CenterText(action_text, term_width)
+                #strAction = CenterText(action_text, term_width)
+
+                # x, depending on setting DoubleHeight
+                if iniVal['DoubleHeight']:
+                    x = (term_width // 2 + 2 - len(action_text)) // 2
+                elif iniVal['SimDoubleHeight']:
+                    x = (term_width + 2 - len(action_text) * 2) // 2
+                else:
+                    action_text = DoubleText(action_text)
+                    x = (term_width + 2 - len(action_text)) // 2
+
                 if iniVal['Bold']:
                     escSetBold(1)
-                PrintAtPos(strAction, 0, 5)
+
+                DoubleLine = 1
+                if iniVal['DoubleHeight'] or iniVal['SimDoubleHeight']:
+                    PrintDoubleHeight(action_text, x, 6)
+                else:
+                    PrintAtPos(action_text, x, 5)
+                    DoubleLine = 0
+                
                 escResetStyle()
 
                 # Print the description
@@ -780,7 +836,7 @@ while loop_state < 4:
                 if iniVal['Italic']:
                     escSetItalic(1)
                 for i, line in enumerate(action_text_long):
-                    PrintAtPos(line, 9, 7 + i, term_width - 10)
+                    PrintAtPos(line, 10, 7 + DoubleLine + i, term_width - 10)
                     loop_act_description += 1
                 
                 if loop_act_description > loop_max_description:
@@ -789,14 +845,14 @@ while loop_state < 4:
                 if loop_act_description < loop_max_description:
                     # Clear the remaining lines
                     for i in range(loop_act_description, loop_max_description):
-                        PrintAtPos(' ', 9, 7 + i, term_width - 10)
+                        PrintAtPos(' ', 10, 7 + DoubleLine + i, term_width - 10)
                 escResetStyle()
 
                 # print loop of loop_repeat  &  action_cnt of action_len
-                PrintAtPos(action_cnt, 17, term_height - 3, 3, 1, '0')
-                PrintAtPos(action_len, 23, term_height - 3, 3, 1, '0')
-                PrintAtPos((loop + 1), 17, term_height - 2, 3, 1, '0')
-                PrintAtPos(loop_repeat, 23, term_height - 2, 3, 1, '0')
+                PrintAtPos(action_cnt, 18, term_height - 3, 3, 1, '0')
+                PrintAtPos(action_len, 24, term_height - 3, 3, 1, '0')
+                PrintAtPos((loop + 1), 18, term_height - 2, 3, 1, '0')
+                PrintAtPos(loop_repeat, 24, term_height - 2, 3, 1, '0')
 
                 # Run the timing loop for the specified time 
                 escSetColor(cGreen, cBg)
@@ -804,29 +860,29 @@ while loop_state < 4:
                 escResetColor()
 
                 # Clear the timer - text
-                PrintAtPos(' ' * (term_width - 18), 17, term_height - 5 )
+                PrintAtPos(' ' * (term_width - 18), 18, term_height - 5 )
                 # Clear the action and description
-                for i in range(0, loop_max_description + 2):
-                        PrintAtPos(' ', 9, 5 + i, term_width - 10)
+                for i in range(0, loop_max_description + 3 + DoubleLine):
+                        PrintAtPos(' ', 1, 5 + i, term_width)
 
-                if action_cnt < action_len and not action == '10' and not action == '50':
+                if ((action_cnt < action_len) or (loop + 1 < loop_repeat)) and not action == '10' and not action == '50':
                     # Pause between actions
                     escSetColor(cBlue, cBg)
                     if iniVal['automatic']:
                         # PrintAtPos(iniVal['msg_press_enter_space'], 22, term_height - 5 )
                         run_loop(iniVal['auto_delay_time'])
                     else:
-                        PrintAtPos({iniVal['msg_press_enter']}, 17, term_height - 5 )
+                        PrintAtPos({iniVal['msg_press_enter']}, 18, term_height - 5 )
                     escResetColor()
 
     # Clear Procedure line
-    PrintAtPos(' ' * (term_width - 1), 0, 3, term_width)
+    PrintAtPos(' ' * (term_width - 1), 1, 3, term_width)
     if loop_state < 3:
         # Pause between Procedures (Start -> End)
         if iniVal['automatic']:
             run_loop(int(iniVal['auto_delay_time'] * 1.5))
         else:
-            PrintAtPos({iniVal['msg_press_enter']}, 17, term_height - 5 )
+            PrintAtPos({iniVal['msg_press_enter']}, 18, term_height - 5 )
 
 
     loop_state += 1
