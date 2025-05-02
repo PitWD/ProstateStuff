@@ -3,6 +3,7 @@ import sys
 import configparser
 import time
 import select
+import tty
 from subprocess import Popen, PIPE
 from fcntl import fcntl, F_GETFL, F_SETFL
 
@@ -39,6 +40,8 @@ appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
 appDate = "2025-05-01"
 
+# OS
+iOS = 1
 
 # Load Values from INI (quick 'n' dirty, slow, case sensitive but type-safe)
 def LoadSettings(TrainType = 'Default'):
@@ -437,126 +440,74 @@ def KeyToFunction(key):
         if key.startswith('\x1b'):
             return 'ESC+(' + key[1:] + ' : ' + str(ord(key[1])) + ')'
         elif len(key):
+            if str(ord(key[0])) == '3':
+                return 'Ctrl-C'     # iOS special
             return key
         else:
             return ''
 
-def DumbGetKeyPress():
-    process = Popen(
-        ['python3', '-i'],  # Interaktive Python-Shell
-        stdin = PIPE,
-        stdout = PIPE,
-        stderr = PIPE,
-        shell = False,
-    )
-    flags = fcntl(process.stdout, F_GETFL) # get current p.stdout flags
-    fcntl(process.stdout, F_SETFL, flags | os.O_NONBLOCK)
-    key = ''
-    try:
-        while True:
-            try:
-                #c = os.read(process.stdout.fileno(),1),
-                #c = raw_input(process.stdout.fileno(),1),
-                if c:
-                    key += c
-                else:
-                    return KeyToFunction(key)
-            except:
-                return ''
-    finally:
-        process.stdout.close()
-        process.wait()
-    return ""
-
-def Dumb2GetKeyPress():
-    grace = True
-    key = ''
-    try:
-        pipe = os.open('/dev/stdin', os.O_RDONLY | os.O_NONBLOCK)
-        while True:
-            try:
-                c = os.read(pipe, 1)
-                #c = sys.stdin.read(1)
-                if c:
-                    print(c, end='', flush=True)
-                    key += c.decode("ascii")
-                    #key += c
-                else:
-                    return KeyToFunction(key)
-            except OSError as e:
-                if e.errno == 11 and grace:
-                    # grace period, first write to pipe might take some time
-                    # further reads after opening the file are then successful
-                    time.sleep(0.05)
-                    grace = False
-                else:
-                    return ''
-    except OSError as e:
-        pipe = None
-        raise e
-    finally:
-        if pipe is not None:
-            os.close(pipe)
-    return ""
-
-def GetKeyPress():
-    key = ''
-    grace = True
-
-    while True:
-        # Überprüfe, ob stdin Daten zum Lesen hat
-        rlist, _, _ = select.select([sys.stdin], [], [], 0.01)
-
-        if rlist:
-            c = sys.stdin.read(1)  # Lese 1 Zeichen
-            if c:
-                print(c, end='', flush=True)
-                key += c
-        else:
-            # Wenn keine Eingabe, gebe den aktuellen Status zurück
-            if key:
-                return KeyToFunction(key)
-            else:
-                return ''
-
-        time.sleep(0.01)
 # Look for Keypress - returns key or "" (to esc.py)
-def OldGetKeyPress():
+def GetKeyPress():
+    global iOS
+    key= ''
 
-    if os.name == 'nt':  # Windows
-        import msvcrt
+    if os.name == 'nt':  # Windows - not working yet
         if msvcrt.kbhit():
             return msvcrt.getch().decode('utf-8')
-    else:  # Linux and macOS
-        # idea from: https://stackoverflow.com/questions/71801157/detect-key-press-in-python-without-running-as-root-and-without-blockingioerror
-        fd = sys.stdin
+    elif iOS:  
+        # Even its working on all OS, it's very shitty cause of timing issues
+        # additional not all hits are detected
+        fd = sys.stdin.fileno()     
+        tty.setraw(fd)
+        while True:
+            # Check if stdin has data to read
+            rlist, _, _ = select.select([sys.stdin], [], [], 0.25)
 
-        oldterm = termios.tcgetattr(fd)
-        newattr = termios.tcgetattr(fd)
-
-        newattr[3] = newattr[3] & ~termios.ICANON 
-        newattr[3] = newattr[3] & ~termios.ECHO
-        newattr[6][termios.VMIN] = 0
-        newattr[6][termios.VTIME] = 0
-        termios.tcsetattr(fd, termios.TCSANOW, newattr)
-
-
-        key = ''
-        try:
-            while True:
-                try:
-                    c = sys.stdin.read(1)
-                    if c:
-                        key += c
-                    else:
-                        return KeyToFunction(key)
-                except:
+            if rlist:
+                c = sys.stdin.read(1)  # Lese 1 Zeichen
+                key += c
+            
+            else:
+                os.system('stty sane')
+                if key:
+                    key = KeyToFunction(key)
+                    if key == 'Ctrl-C':
+                        # Ctrl-C - End Skript (iOS special)
+                        escCursorVisible(1)
+                        sys.exit(0)
+                    return key
+                else:
                     return ''
-        finally:
-            termios.tcsetattr(fd, termios.TCSANOW, oldterm)
-    return ""
 
+    else:  # Linux and macOS (after error a-shell under iOS)
+        # idea from: https://stackoverflow.com/questions/71801157/detect-key-press-in-python-without-running-as-root-and-without-blockingioerror
+        fd = sys.stdin.fileno()
+        try:
+            oldterm = termios.tcgetattr(fd)
+            newattr = termios.tcgetattr(fd)
 
+            newattr[3] = newattr[3] & ~termios.ICANON 
+            newattr[3] = newattr[3] & ~termios.ECHO
+            newattr[6][termios.VMIN] = 0
+            newattr[6][termios.VTIME] = 0
+            termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+            try:
+                while True:
+                    try:
+                        c = sys.stdin.read(1)
+                        if c:
+                            key += c
+                        else:
+                            return KeyToFunction(key)
+                    except:
+                        return ''
+            finally:
+                termios.tcsetattr(fd, termios.TCSANOW, oldterm)
+        except:
+            iOS = 1
+            return GetKeyPress()
+    
 
 # Clear the console (to esc.py)
 def escCLS():
@@ -723,6 +674,7 @@ def PrintDoubleWidth (text, x, y, clear = 0, right = 0, space = ' '):
 def run_loop(timing):
     # Space pauses/continues the loop
     # Enter stops the loop - return 0
+    global iOS
     timing = float(timing)
     start_time = time.time()
     term_size = escGetTerminalSize()
@@ -737,14 +689,16 @@ def run_loop(timing):
     escResetStyle()
 
     while time.time() - start_time < timing:
-        time.sleep(0.05)
+        if not iOS: 
+            time.sleep(0.05)
         key = GetKeyPress()
         #print("press:" + key, end='', flush=True)
         if key == " ":
             #print("\nspace", end='', flush=True)
             pause_time = time.time()
             while True:
-                time.sleep(0.05)
+                if not iOS:
+                    time.sleep(0.05)
                 key = GetKeyPress()
                 if key == " ":
                     break
