@@ -38,13 +38,15 @@ appName = "Powerful Pee & Potence"
 appVersion = "0.0.6a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
-appDate = "2025-05-01"
+appDate = "2025-05-02"
 
 # OS
-iOS = 1
+iOS = 0
 
 # Load Values from INI (quick 'n' dirty, slow, case sensitive but type-safe)
 def LoadSettings(TrainType = 'Default'):
+
+    global iOS
 
     NoSettings = False
     NoLanguage = False
@@ -84,7 +86,8 @@ def LoadSettings(TrainType = 'Default'):
         'SimDoubleWidth': config.get('Global', 'SimDoubleWidth') if config.has_option('Global', 'SimDoubleWidth') else '0',
         'Bold': config.get('Global', 'Bold') if config.has_option('Global', 'Bold') else '0',
         'Italic': config.get('Global', 'Italic') if config.has_option('Global', 'Italic') else '0',
-        'Underline': config.get('Global', 'Underline') if config.has_option('Global', 'Underline') else '0'
+        'Underline': config.get('Global', 'Underline') if config.has_option('Global', 'Underline') else '0',
+        'iOS': config.get('Global', 'iOS') if config.has_option('Global', 'iOS') else '0'
     }
 
     # Save default values to Settings.ini
@@ -104,6 +107,7 @@ def LoadSettings(TrainType = 'Default'):
             config.set('Global', 'Bold', iniVal['Bold'])
             config.set('Global', 'Italic', iniVal['Italic'])
             config.set('Global', 'Underline', iniVal['Underline'])
+            config.set('Global', 'iOS', iniVal['iOS'])
             config.add_section(TrainType)
             config.set(TrainType, 'Blink', iniVal['blink_time'])
             config.set(TrainType, 'Butterfly', iniVal['butterfly_time'])
@@ -149,7 +153,8 @@ def LoadSettings(TrainType = 'Default'):
         'main_procedure': config.get(LangProcedure, 'Main') if config.has_option(LangProcedure, 'Main') else '"Main procedure"',
         'end_procedure': config.get(LangProcedure, 'End') if config.has_option(LangProcedure, 'End') else '"End procedure"',
         'msg_press_enter': config.get(LangMessage, 'PressEnter') if config.has_option(LangMessage, 'PressEnter') else '"Press Enter to continue..."',
-        'msg_press_enter_space': config.get(LangMessage, 'PressEnterSpace') if config.has_option(LangMessage, 'PressEnterSpace') else '"Press ENTER to cancel, SPACE to pause"'
+        'msg_press_enter_space': config.get(LangMessage, 'PressEnterSpace') if config.has_option(LangMessage, 'PressEnterSpace') else '"Press ENTER to cancel, SPACE to pause"',
+        'msg_iOS_enter_space': config.get(LangMessage, 'iOSEnterSpace') if config.has_option(LangMessage, 'iOSEnterSpace') else '"Press SPACE + ENTER to cancel, ENTER to pause"'
     }
 
     # Save default values to Language.ini
@@ -175,9 +180,10 @@ def LoadSettings(TrainType = 'Default'):
             config.add_section(LangMessage)
             config.set(LangMessage, 'PressEnter', lang_values['msg_press_enter'])
             config.set(LangMessage, 'PressEnterSpace', lang_values['msg_press_enter_space'])
+            config.set(LangMessage, 'iOSEnterSpace', lang_values['msg_iOS_enter_space'])
             config.write(configfile)
         # Restart App for right parsing %%
-        os.execv(sys.executable, ['python'] + sys.argv)
+        os.execv(sys.executable, ['python3'] + sys.argv)
 
     # Combine iniVal and lang_values
     iniVal.update(lang_values)
@@ -202,6 +208,7 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['Bold'] = bool(int(iniVal['Bold']))
     iniVal['Italic'] = bool(int(iniVal['Italic']))
     iniVal['Underline'] = bool(int(iniVal['Underline']))
+    iniVal['iOS'] = bool(int(iniVal['iOS']))
     # Strip leading and trailing '"' from strings
     iniVal['version'] = iniVal['version'].strip('"')
     iniVal['start_sequence'] = iniVal['start_sequence'].strip('"')
@@ -222,10 +229,16 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['end_procedure'] = iniVal['end_procedure'].strip('"')
     iniVal['msg_press_enter'] = iniVal['msg_press_enter'].strip('"')
     iniVal['msg_press_enter_space'] = iniVal['msg_press_enter_space'].strip('"')
+    iniVal['msg_iOS_enter_space'] = iniVal['msg_iOS_enter_space'].strip('"')
     # Make lists from sequences (" " and "_" are legal separators)
     iniVal['start_sequence'] = iniVal['start_sequence'].replace(' ', '_').split('_')
     iniVal['main_sequence'] = iniVal['main_sequence'].replace(' ', '_').split('_')
     iniVal['end_sequence'] = iniVal['end_sequence'].replace(' ', '_').split('_')
+
+    if iniVal['iOS']:
+        # iOS special - swap Enter and Space 
+        iniVal['msg_press_enter_space'] = iniVal['msg_iOS_enter_space']
+        iOS = 1
 
     return iniVal
 
@@ -458,23 +471,35 @@ def GetKeyPress():
         # Even its working on all OS, it's very shitty cause of timing issues
         # additional not all hits are detected
         fd = sys.stdin.fileno()     
-        tty.setraw(fd)
+        if not iniVal['iOS']:
+            tty.setraw(fd)
         while True:
             # Check if stdin has data to read
-            rlist, _, _ = select.select([sys.stdin], [], [], 0.25)
+            if iniVal['iOS']:
+                rlist, _, _ = select.select([sys.stdin], [], [], 0.33)
+            else:
+                rlist, _, _ = select.select([sys.stdin], [], [], 0.25)
 
             if rlist:
                 c = sys.stdin.read(1)  # Lese 1 Zeichen
                 key += c
             
             else:
-                os.system('stty sane')
+                if not iniVal['iOS']:
+                    os.system('stty sane')
                 if key:
                     key = KeyToFunction(key)
                     if key == 'Ctrl-C':
                         # Ctrl-C - End Skript (iOS special)
                         escCursorVisible(1)
                         sys.exit(0)
+                    if iniVal['iOS']:
+                        # iOS special - swap Enter and Space (Enter for Pause / Space + Enter for Cancel)
+                        if key == 'Enter':
+                            key = ' '
+                        elif key[0] == ' ':
+                            key = 'Enter'
+                    
                     return key
                 else:
                     return ''
@@ -688,6 +713,12 @@ def run_loop(timing):
     PrintAtPos(iniVal['msg_press_enter_space'], 23, term_height - 5 )
     escResetStyle()
 
+    # Print time left
+    if iniVal['Bold']:
+        escSetBold(1)
+    PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
+    escResetStyle()
+
     while time.time() - start_time < timing:
         if not iOS: 
             time.sleep(0.05)
@@ -709,6 +740,7 @@ def run_loop(timing):
             return 0
         loop_cnt += 1
         if loop_cnt > 4:
+            # Print time left
             if iniVal['Bold']:
                 escSetBold(1)
             PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
