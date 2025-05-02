@@ -2,6 +2,9 @@ import os
 import sys
 import configparser
 import time
+import select
+from subprocess import Popen, PIPE
+from fcntl import fcntl, F_GETFL, F_SETFL
 
 if os.name == 'nt':  # Windows
     import msvcrt
@@ -31,7 +34,7 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.5a"
+appVersion = "0.0.6a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
 appDate = "2025-05-01"
@@ -438,8 +441,87 @@ def KeyToFunction(key):
         else:
             return ''
 
-# Look for Keypress - returns key or "" (to esc.py)
+def DumbGetKeyPress():
+    process = Popen(
+        ['python3', '-i'],  # Interaktive Python-Shell
+        stdin = PIPE,
+        stdout = PIPE,
+        stderr = PIPE,
+        shell = False,
+    )
+    flags = fcntl(process.stdout, F_GETFL) # get current p.stdout flags
+    fcntl(process.stdout, F_SETFL, flags | os.O_NONBLOCK)
+    key = ''
+    try:
+        while True:
+            try:
+                #c = os.read(process.stdout.fileno(),1),
+                #c = raw_input(process.stdout.fileno(),1),
+                if c:
+                    key += c
+                else:
+                    return KeyToFunction(key)
+            except:
+                return ''
+    finally:
+        process.stdout.close()
+        process.wait()
+    return ""
+
+def Dumb2GetKeyPress():
+    grace = True
+    key = ''
+    try:
+        pipe = os.open('/dev/stdin', os.O_RDONLY | os.O_NONBLOCK)
+        while True:
+            try:
+                c = os.read(pipe, 1)
+                #c = sys.stdin.read(1)
+                if c:
+                    print(c, end='', flush=True)
+                    key += c.decode("ascii")
+                    #key += c
+                else:
+                    return KeyToFunction(key)
+            except OSError as e:
+                if e.errno == 11 and grace:
+                    # grace period, first write to pipe might take some time
+                    # further reads after opening the file are then successful
+                    time.sleep(0.05)
+                    grace = False
+                else:
+                    return ''
+    except OSError as e:
+        pipe = None
+        raise e
+    finally:
+        if pipe is not None:
+            os.close(pipe)
+    return ""
+
 def GetKeyPress():
+    key = ''
+    grace = True
+
+    while True:
+        # Überprüfe, ob stdin Daten zum Lesen hat
+        rlist, _, _ = select.select([sys.stdin], [], [], 0.01)
+
+        if rlist:
+            c = sys.stdin.read(1)  # Lese 1 Zeichen
+            if c:
+                print(c, end='', flush=True)
+                key += c
+        else:
+            # Wenn keine Eingabe, gebe den aktuellen Status zurück
+            if key:
+                return KeyToFunction(key)
+            else:
+                return ''
+
+        time.sleep(0.01)
+# Look for Keypress - returns key or "" (to esc.py)
+def OldGetKeyPress():
 
     if os.name == 'nt':  # Windows
         import msvcrt
@@ -473,6 +555,8 @@ def GetKeyPress():
         finally:
             termios.tcsetattr(fd, termios.TCSANOW, oldterm)
     return ""
+
+
 
 # Clear the console (to esc.py)
 def escCLS():
