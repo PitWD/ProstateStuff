@@ -35,13 +35,13 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.6a"
+appVersion = "0.0.7a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
-appDate = "2025-05-02"
+appDate = "2025-05-03"
 
 # OS
-iOS = 0
+iOS = 0  # iOS special (a-shell)
 
 # Load Values from INI (quick 'n' dirty, slow, case sensitive but type-safe)
 def LoadSettings(TrainType = 'Default'):
@@ -371,6 +371,33 @@ def KeyToFunction(key):
         '\x0A': 'Enter',
         '\x0D': 'Enter',
         '\x0D\x0A': 'Enter',
+        '\x00': 'EOF',
+        '\x01': 'Ctrl-A',
+        '\x02': 'Ctrl-B',
+        '\x03': 'Ctrl-C',
+        '\x04': 'Ctrl-D',
+        '\x05': 'Ctrl-E',
+        '\x06': 'Ctrl-F',
+        '\x07': 'Ctrl-G',
+        # '\x08': 'Ctrl-H', Back
+        # '\x09': 'Ctrl-I', Tab
+        # '\x0A': 'Ctrl-J', Enter
+        '\x0B': 'Ctrl-K',
+        '\x0C': 'Ctrl-L',
+        # '\x0D': 'Ctrl-M', Enter
+        '\x0E': 'Ctrl-N',
+        '\x0F': 'Ctrl-O',
+        '\x10': 'Ctrl-P',
+        '\x11': 'Ctrl-Q',
+        '\x12': 'Ctrl-R',
+        '\x13': 'Ctrl-S',
+        '\x14': 'Ctrl-T',
+        '\x15': 'Ctrl-U',
+        '\x16': 'Ctrl-V',
+        '\x17': 'Ctrl-W',
+        '\x18': 'Ctrl-X',
+        '\x19': 'Ctrl-Y',
+        '\x1A': 'Ctrl-Z',
         '\x1b[2;2~': 'Shift-Ins',
         '\x1b[3;2~': 'Shift-Del',
         '\x1b[5;2~': 'Shift-PgUp',
@@ -453,11 +480,11 @@ def KeyToFunction(key):
         if key.startswith('\x1b'):
             return 'ESC+(' + key[1:] + ' : ' + str(ord(key[1])) + ')'
         elif len(key):
-            if str(ord(key[0])) == '3':
-                return 'Ctrl-C'     # iOS special
+            #if str(ord(key[0])) == '3':
+                #return 'Ctrl-C'     # iOS (a-shell) special
             return key
         else:
-            return ''
+            return 'NULL'
 
 # Look for Keypress - returns key or "" (to esc.py)
 def GetKeyPress():
