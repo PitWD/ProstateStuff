@@ -4,8 +4,7 @@ import configparser
 import time
 import select
 import tty
-from subprocess import Popen, PIPE
-from fcntl import fcntl, F_GETFL, F_SETFL
+import platform
 
 if os.name == 'nt':  # Windows
     import msvcrt
@@ -42,6 +41,9 @@ appDate = "2025-05-03"
 
 # OS
 iOS = 0  # iOS special (a-shell)
+
+# Trigger time for ScreenSaver WatchDog
+TriggerTime = time.time() 
 
 # Load Values from INI (quick 'n' dirty, slow, case sensitive but type-safe)
 def LoadSettings(TrainType = 'Default'):
@@ -87,7 +89,14 @@ def LoadSettings(TrainType = 'Default'):
         'Bold': config.get('Global', 'Bold') if config.has_option('Global', 'Bold') else '0',
         'Italic': config.get('Global', 'Italic') if config.has_option('Global', 'Italic') else '0',
         'Underline': config.get('Global', 'Underline') if config.has_option('Global', 'Underline') else '0',
-        'iOS': config.get('Global', 'iOS') if config.has_option('Global', 'iOS') else '0'
+        'iOS': config.get('Global', 'iOS') if config.has_option('Global', 'iOS') else '0',
+        'Android': config.get('Global', 'Android') if config.has_option('Global', 'Android') else '0',
+        'TriggerScreenSaver': config.get('Global', 'TriggerScreenSaver') if config.has_option('Global', 'TriggerScreenSaver') else '0',
+        'TriggerScrTime': config.get('Global', 'TriggerScrTime') if config.has_option('Global', 'TriggerScrTime') else '60',
+        'TriggerScrText_X': config.get('Global', 'TriggerScrText_X') if config.has_option('Global', 'TriggerScrText_X') else 'xset s reset',
+        'TriggerScrText_Mac': config.get('Global', 'TriggerScrText_Mac') if config.has_option('Global', 'TriggerScrText_Mac') else 'caffeinate -u -t 90',
+        'TriggerScrText_Win': config.get('Global', 'TriggerScrText_Win') if config.has_option('Global', 'TriggerScrText_Win') else '''powershell -Command "[System.Windows.Forms.SendKeys]::SendWait(\'{F15}\')"''',
+        'TriggerScrText_Other': config.get('Global', 'TriggerScrText_Other') if config.has_option('Global', 'TriggerScrText_Other') else '',
     }
 
     # Save default values to Settings.ini
@@ -108,6 +117,13 @@ def LoadSettings(TrainType = 'Default'):
             config.set('Global', 'Italic', iniVal['Italic'])
             config.set('Global', 'Underline', iniVal['Underline'])
             config.set('Global', 'iOS', iniVal['iOS'])
+            config.set('Global', 'Android', iniVal['Android'])
+            config.set('Global', 'TriggerScreenSaver', iniVal['TriggerScreenSaver'])
+            config.set('Global', 'TriggerScrTime', iniVal['TriggerScrTime'])
+            config.set('Global', 'TriggerScrText_X', iniVal['TriggerScrText_X'])
+            config.set('Global', 'TriggerScrText_Mac', iniVal['TriggerScrText_Mac'])
+            config.set('Global', 'TriggerScrText_Win', iniVal['TriggerScrText_Win'])
+            config.set('Global', 'TriggerScrText_Other', iniVal['TriggerScrText_Other'])
             config.add_section(TrainType)
             config.set(TrainType, 'Blink', iniVal['blink_time'])
             config.set(TrainType, 'Butterfly', iniVal['butterfly_time'])
@@ -198,6 +214,7 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['main_repeat'] = int(iniVal['main_repeat'])
     iniVal['end_repeat'] = int(iniVal['end_repeat'])
     iniVal['auto_delay_time'] = int(iniVal['auto_delay_time'])
+    iniVal['TriggerScrTime'] = int(iniVal['TriggerScrTime'])
     # Bool values to boolean
     iniVal['automatic'] = bool(int(iniVal['automatic']))
     iniVal['debug'] = bool(int(iniVal['debug']))
@@ -209,6 +226,8 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['Italic'] = bool(int(iniVal['Italic']))
     iniVal['Underline'] = bool(int(iniVal['Underline']))
     iniVal['iOS'] = bool(int(iniVal['iOS']))
+    iniVal['Android'] = bool(int(iniVal['Android']))
+    iniVal['TriggerScreenSaver'] = bool(int(iniVal['TriggerScreenSaver']))
     # Strip leading and trailing '"' from strings
     iniVal['version'] = iniVal['version'].strip('"')
     iniVal['start_sequence'] = iniVal['start_sequence'].strip('"')
@@ -230,17 +249,45 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['msg_press_enter'] = iniVal['msg_press_enter'].strip('"')
     iniVal['msg_press_enter_space'] = iniVal['msg_press_enter_space'].strip('"')
     iniVal['msg_iOS_enter_space'] = iniVal['msg_iOS_enter_space'].strip('"')
+    iniVal['TriggerScrText_X'] = iniVal['TriggerScrText_X'].strip('"')
+    iniVal['TriggerScrText_Mac'] = iniVal['TriggerScrText_Mac'].strip('"')
+    iniVal['TriggerScrText_Win'] = iniVal['TriggerScrText_Win'].strip("'")  # Win string is encapsulated in single quotes
+    iniVal['TriggerScrText_Other'] = iniVal['TriggerScrText_Other'].strip('"')
+
     # Make lists from sequences (" " and "_" are legal separators)
     iniVal['start_sequence'] = iniVal['start_sequence'].replace(' ', '_').split('_')
     iniVal['main_sequence'] = iniVal['main_sequence'].replace(' ', '_').split('_')
     iniVal['end_sequence'] = iniVal['end_sequence'].replace(' ', '_').split('_')
 
     if iniVal['iOS']:
-        # iOS special - swap Enter and Space 
+        # iOS (a-shell) special - swap Enter and Space 
         iniVal['msg_press_enter_space'] = iniVal['msg_iOS_enter_space']
         iOS = 1
 
     return iniVal
+
+
+# Trigger the ScreenSaver WatchDog
+def TriggerWatchDog():
+
+    system = platform.system()
+
+    if system == "Windows":
+        # Windows: Sim a mouse move - Win10 or higher
+        # 'powershell -Command "[System.Windows.Forms.SendKeys]::SendWait(\'{F15}\')"'
+        os.system(iniVal['TriggerScrText_Win'])
+
+    elif system == "Darwin":
+        # 'caffeinate -u -t 90'
+        os.system(iniVal['TriggerScrText_Mac'])
+    
+    elif system == "Linux":
+        # 'xset s reset'
+        os.system(iniVal['TriggerScrText_X'])
+    
+    else:
+        # other OS
+        os.system(iniVal['TriggerScrText_Other'])
 
 
 # Convert esc-coded special keys to keyname (to esc.py)
@@ -398,6 +445,32 @@ def KeyToFunction(key):
         '\x18': 'Ctrl-X',
         '\x19': 'Ctrl-Y',
         '\x1A': 'Ctrl-Z',
+        '^A': 'Ctrl-A',
+        '^B': 'Ctrl-B',
+        '^C': 'Ctrl-C',
+        '^D': 'Ctrl-D',
+        '^E': 'Ctrl-E',
+        '^F': 'Ctrl-F',
+        '^G': 'Ctrl-G',
+        '^H': 'Ctrl-H',
+        '^I': 'Ctrl-I',
+        '^J': 'Ctrl-J',
+        '^K': 'Ctrl-K',
+        '^L': 'Ctrl-L',
+        '^M': 'Ctrl-M',
+        '^N': 'Ctrl-N',
+        '^O': 'Ctrl-O',
+        '^P': 'Ctrl-P',
+        '^Q': 'Ctrl-Q',
+        '^R': 'Ctrl-R',
+        '^S': 'Ctrl-S',
+        '^T': 'Ctrl-T',
+        '^U': 'Ctrl-U',
+        '^V': 'Ctrl-V',
+        '^W': 'Ctrl-W',
+        '^X': 'Ctrl-X',
+        '^Y': 'Ctrl-Y',
+        '^Z': 'Ctrl-Z',
         '\x1b[2;2~': 'Shift-Ins',
         '\x1b[3;2~': 'Shift-Del',
         '\x1b[5;2~': 'Shift-PgUp',
@@ -475,13 +548,16 @@ def KeyToFunction(key):
     }        
         
     if key in escKeys:
+        #print({'key': key, 'value': escKeys[key]}, end='', flush=True)
         return escKeys[key]
     else:
         if key.startswith('\x1b'):
+            #print({'ESC+(' + key[1:] + ' : ' + str(ord(key[1])) + ')'}, end='', flush=True)
             return 'ESC+(' + key[1:] + ' : ' + str(ord(key[1])) + ')'
         elif len(key):
             #if str(ord(key[0])) == '3':
                 #return 'Ctrl-C'     # iOS (a-shell) special
+            #print({key}, end='', flush=True)
             return key
         else:
             return 'NULL'
@@ -496,7 +572,7 @@ def GetKeyPress():
             return msvcrt.getch().decode('utf-8')
     elif iOS:  
         # Even its working on all OS, it's very shitty cause of timing issues
-        # additional not all hits are detected
+        # additional not all hits are all time detected
         fd = sys.stdin.fileno()     
         if not iniVal['iOS']:
             tty.setraw(fd)
@@ -516,10 +592,6 @@ def GetKeyPress():
                     os.system('stty sane')
                 if key:
                     key = KeyToFunction(key)
-                    if key == 'Ctrl-C':
-                        # Ctrl-C - End Skript (iOS special)
-                        escCursorVisible(1)
-                        sys.exit(0)
                     if iniVal['iOS']:
                         # iOS special - swap Enter and Space (Enter for Pause / Space + Enter for Cancel)
                         if key == 'Enter':
@@ -544,20 +616,22 @@ def GetKeyPress():
             newattr[6][termios.VTIME] = 0
             termios.tcsetattr(fd, termios.TCSANOW, newattr)
 
-            try:
-                while True:
-                    try:
-                        c = sys.stdin.read(1)
-                        if c:
-                            key += c
-                        else:
-                            return KeyToFunction(key)
-                    except:
-                        return ''
-            finally:
-                termios.tcsetattr(fd, termios.TCSANOW, oldterm)
+            while True:
+                try:
+                    c = sys.stdin.read(1)
+                    if c:
+                        key += c
+                    else:
+                        key = KeyToFunction(key)
+                        termios.tcsetattr(fd, termios.TCSANOW, oldterm)
+                        return key
+                except:
+                    termios.tcsetattr(fd, termios.TCSANOW, oldterm)
+                    return ''
+                
         except:
             iOS = 1
+            termios.tcsetattr(fd, termios.TCSANOW, oldterm)
             return GetKeyPress()
     
 
@@ -727,6 +801,8 @@ def run_loop(timing):
     # Space pauses/continues the loop
     # Enter stops the loop - return 0
     global iOS
+    global TriggerTime
+
     timing = float(timing)
     start_time = time.time()
     term_size = escGetTerminalSize()
@@ -762,9 +838,20 @@ def run_loop(timing):
                     break
                 elif key == "Enter":
                     return 0
+                elif key == "Ctrl-Q" or key == "Ctrl-C" or key == "Ctrl-D" or key == "Ctrl-Z" or key == "Esc":
+                    # Clean Quit Script
+                    escCLS()
+                    escCursorVisible(1)                            
+                    os._exit(0)
             start_time += time.time() - pause_time
         elif key == "Enter":
             return 0
+        elif key == "Ctrl-Q" or key == "Ctrl-C" or key == "Ctrl-D" or key == "Ctrl-Z" or key == "Esc":
+            # Clean Quit Script
+            escCLS()
+            escCursorVisible(1)                            
+            os._exit(0)
+
         loop_cnt += 1
         if loop_cnt > 4:
             # Print time left
@@ -773,6 +860,11 @@ def run_loop(timing):
             PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
             escResetStyle()
             loop_cnt = 0
+        # Check on ScreenSaver
+        if iniVal['TriggerScreenSaver']:
+            if time.time() - TriggerTime > iniVal['TriggerScrTime']:
+                TriggerWatchDog()
+                TriggerTime = time.time()
     return time.time() - start_time
 
 
