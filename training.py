@@ -68,6 +68,7 @@ def LoadSettings(TrainType = 'Default'):
     iniVal = {
         'version': config.get('Global', 'Version') if config.has_option('Global', 'Version') else '1.0.0',
         'debug': config.get('Global', 'Debug') if config.has_option('Global', 'Debug') else '0',
+        'StartDelay': config.get('Global', 'StartDelay') if config.has_option('Global', 'StartDelay') else '1',
         'blink_time': config.get(TrainType, 'Blink') if config.has_option(TrainType, 'Blink') else '60',
         'butterfly_time': config.get(TrainType, 'Butterfly') if config.has_option(TrainType, 'Butterfly') else '10',
         'percent10_time': config.get(TrainType, '10Percent') if config.has_option(TrainType, '10Percent') else '10',
@@ -106,6 +107,7 @@ def LoadSettings(TrainType = 'Default'):
             config.add_section('Global')
             config.set('Global', 'Version', iniVal['version'])
             config.set('Global', 'Debug', iniVal['debug'])
+            config.set('Global', 'StartDelay', iniVal['StartDelay'])
             config.set('Global', 'Language', iniVal['language'])
             config.set('Global', 'Automatic', iniVal['automatic'])
             config.set('Global', 'AutoDelayTime', iniVal['auto_delay_time'])
@@ -170,7 +172,8 @@ def LoadSettings(TrainType = 'Default'):
         'end_procedure': config.get(LangProcedure, 'End') if config.has_option(LangProcedure, 'End') else '"End procedure"',
         'msg_press_enter': config.get(LangMessage, 'PressEnter') if config.has_option(LangMessage, 'PressEnter') else '"Press Enter to continue..."',
         'msg_press_enter_space': config.get(LangMessage, 'PressEnterSpace') if config.has_option(LangMessage, 'PressEnterSpace') else '"Press ENTER to cancel, SPACE to pause"',
-        'msg_iOS_enter_space': config.get(LangMessage, 'iOSEnterSpace') if config.has_option(LangMessage, 'iOSEnterSpace') else '"Press SPACE + ENTER to cancel, ENTER to pause"'
+        'msg_iOS_enter_space': config.get(LangMessage, 'iOSEnterSpace') if config.has_option(LangMessage, 'iOSEnterSpace') else '"Press SPACE + ENTER to cancel, ENTER to pause"',
+        'msg_start_delay': config.get(LangMessage, 'StartDelay') if config.has_option(LangMessage, 'StartDelay') else '"Start delay"',
     }
 
     # Save default values to Language.ini
@@ -197,6 +200,7 @@ def LoadSettings(TrainType = 'Default'):
             config.set(LangMessage, 'PressEnter', lang_values['msg_press_enter'])
             config.set(LangMessage, 'PressEnterSpace', lang_values['msg_press_enter_space'])
             config.set(LangMessage, 'iOSEnterSpace', lang_values['msg_iOS_enter_space'])
+            config.set(LangMessage, 'StartDelay', lang_values['msg_start_delay'])
             config.write(configfile)
         # Restart App for right parsing %%
         os.execv(sys.executable, ['python3'] + sys.argv)
@@ -215,6 +219,7 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['end_repeat'] = int(iniVal['end_repeat'])
     iniVal['auto_delay_time'] = int(iniVal['auto_delay_time'])
     iniVal['TriggerScrTime'] = int(iniVal['TriggerScrTime'])
+    iniVal['StartDelay'] = int(iniVal['StartDelay'])
     # Bool values to boolean
     iniVal['automatic'] = bool(int(iniVal['automatic']))
     iniVal['debug'] = bool(int(iniVal['debug']))
@@ -249,6 +254,7 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['msg_press_enter'] = iniVal['msg_press_enter'].strip('"')
     iniVal['msg_press_enter_space'] = iniVal['msg_press_enter_space'].strip('"')
     iniVal['msg_iOS_enter_space'] = iniVal['msg_iOS_enter_space'].strip('"')
+    iniVal['msg_start_delay'] = iniVal['msg_start_delay'].strip('"')
     iniVal['TriggerScrText_X'] = iniVal['TriggerScrText_X'].strip('"')
     iniVal['TriggerScrText_Mac'] = iniVal['TriggerScrText_Mac'].strip('"')
     iniVal['TriggerScrText_Win'] = iniVal['TriggerScrText_Win'].strip("'")  # Win string is encapsulated in single quotes
@@ -803,11 +809,12 @@ def PrintDoubleWidth (text, x, y, clear = 0, right = 0, space = ' '):
     
 
 # Run loop for 'timing' seconds - return runtime
-def run_loop(timing):
+def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
     # Space pauses/continues the loop
     # Enter stops the loop - return 0
     global iOS
     global TriggerTime
+    global iniVal
 
     timing = float(timing)
     start_time = time.time()
@@ -816,17 +823,21 @@ def run_loop(timing):
     term_height = term_size.lines
     loop_cnt = 0
 
-    # Print "Press ENTER / SPACE"
-    if iniVal['Italic']:
-        escSetItalic(1)
-    PrintAtPos(iniVal['msg_press_enter_space'], 23, term_height - 5 )
-    escResetStyle()
+    if msg:
+        # Print "Press ENTER / SPACE"
+        if iniVal['Italic']:
+            escSetItalic(1)
+        # PrintAtPos(msg, 23, term_height - 5 )
+        PrintAtPos(msg, x, y )
+        escResetStyle()
 
-    # Print time left
-    if iniVal['Bold']:
-        escSetBold(1)
-    PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
-    escResetStyle()
+    if printTime:
+        # Print time left
+        if iniVal['Bold']:
+            escSetBold(1)
+        # PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
+        PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", x - 5, y, 3, 1, ' ')
+        escResetStyle()
 
     while time.time() - start_time < timing:
         if not iOS: 
@@ -847,6 +858,7 @@ def run_loop(timing):
                 elif key == "Ctrl-Q" or key == "Ctrl-C" or key == "Ctrl-D" or key == "Ctrl-Z" or key == "Esc":
                     # Clean Quit Script
                     escCLS()
+                    setEcho(0)
                     escCursorVisible(1)                            
                     os._exit(0)
             start_time += time.time() - pause_time
@@ -855,7 +867,8 @@ def run_loop(timing):
         elif key == "Ctrl-Q" or key == "Ctrl-C" or key == "Ctrl-D" or key == "Ctrl-Z" or key == "Esc":
             # Clean Quit Script
             escCLS()
-            escCursorVisible(1)                            
+            escCursorVisible(1) 
+            setEcho(1)                           
             os._exit(0)
 
         loop_cnt += 1
@@ -863,7 +876,7 @@ def run_loop(timing):
             # Print time left
             if iniVal['Bold']:
                 escSetBold(1)
-            PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
+            PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", x - 5, y, 3, 1, ' ')
             escResetStyle()
             loop_cnt = 0
 
@@ -886,6 +899,9 @@ if len(sys.argv) > 1:
 # Load ini-values from the configuration file
 iniVal = LoadSettings(TrainType)
 
+escCursorVisible(0)  # Hide cursor
+setEcho(0)  # Disable echo
+
 if iniVal['debug']:
     escCLS()
     print(f"Debug mode is ON. Loaded settings for {TrainType}:\n")
@@ -893,14 +909,16 @@ if iniVal['debug']:
         print(f"   {key}: {value}")
     input("\nPress Enter to continue...") 
 
+if iniVal['StartDelay'] > 0:
+    # Delay before starting the training
+    escCLS()
+    run_loop(iniVal['StartDelay'], iniVal['msg_start_delay'], 10, 3)
+
 loop_state = 1  # 1=Start, 2=Main, 3=End
 loop_cnt = 0
 loop_time = 0
 loop_max_description = 0
 loop_act_description = 0
-
-escCursorVisible(0)  # Hide cursor
-setEcho(0)  # Disable echo
 
 # Training Loop
 while loop_state < 4:
@@ -1054,7 +1072,7 @@ while loop_state < 4:
 
                 # Run the timing loop for the specified time 
                 escSetColor(cGreen, cBg)
-                loop_time = run_loop(action_time)
+                loop_time = run_loop(action_time, iniVal['msg_press_enter_space'], 23, term_height - 5)
                 escResetColor()
 
                 # Clear the timer - text
@@ -1068,9 +1086,9 @@ while loop_state < 4:
                     escSetColor(cBlue, cBg)
                     if iniVal['automatic']:
                         # PrintAtPos(iniVal['msg_press_enter_space'], 22, term_height - 5 )
-                        run_loop(iniVal['auto_delay_time'])
+                        run_loop(iniVal['auto_delay_time'], iniVal['msg_press_enter_space'], 23, term_height - 5)
                     else:
-                        PrintAtPos({iniVal['msg_press_enter']}, 18, term_height - 5 )
+                        PrintAtPos({iniVal['msg_press_enter']}, 23, term_height - 5 )
                     escResetColor()
 
     # Clear Procedure line
@@ -1078,9 +1096,9 @@ while loop_state < 4:
     if loop_state < 3:
         # Pause between Procedures (Start -> End)
         if iniVal['automatic']:
-            run_loop(int(iniVal['auto_delay_time'] * 1.5))
+            run_loop(int(iniVal['auto_delay_time'] * 1.5), iniVal['msg_press_enter_space'], 23, term_height - 5)
         else:
-            PrintAtPos({iniVal['msg_press_enter']}, 18, term_height - 5 )
+            PrintAtPos({iniVal['msg_press_enter']}, 23, term_height - 5)
 
 
     loop_state += 1
