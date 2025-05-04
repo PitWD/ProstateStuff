@@ -675,6 +675,12 @@ def escCursorVisible(state):
     
     print(f'\033[?25{c}', end='', flush=True)
 
+def setEcho(state):
+    # Set echo state
+    if state:
+        os.system('stty echo')
+    else:
+        os.system('stty -echo')
 
 ### Set cursor style ### (all 7 to esc.py)
 def escSetStyle(style):
@@ -860,11 +866,13 @@ def run_loop(timing):
             PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
             escResetStyle()
             loop_cnt = 0
+
         # Check on ScreenSaver
         if iniVal['TriggerScreenSaver']:
             if time.time() - TriggerTime > iniVal['TriggerScrTime']:
                 TriggerWatchDog()
                 TriggerTime = time.time()
+
     return time.time() - start_time
 
 
@@ -892,6 +900,7 @@ loop_max_description = 0
 loop_act_description = 0
 
 escCursorVisible(0)  # Hide cursor
+setEcho(0)  # Disable echo
 
 # Training Loop
 while loop_state < 4:
@@ -1076,6 +1085,7 @@ while loop_state < 4:
 
     loop_state += 1
 
+setEcho(1)  # Enable echo
 escCursorVisible(1)  # Show cursor
 escCLS()
 
