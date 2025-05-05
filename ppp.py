@@ -762,6 +762,8 @@ def PrintAtPos(text, x, y, clear = 0, right = 0, space = ' '):
         escSetCursorPos(x, y)
     print(text, end='', flush=True)
 
+    return len(text)
+
 # Builds centered text with leading and trailing spaces
 def CenterText(text, width):
     text = str(text)
@@ -851,8 +853,11 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
         # PrintAtPos(msg, 23, term_height - 5 )
         msg = TextToLines(msg, term_width - x)
         cntLines = len(msg)
+        len1stLine = 0
         for i in range(cntLines):
-            PrintAtPos(msg[i], x, y + i)
+            if i > 0:
+                msg[i] = CenterText(msg[i], len1stLine)
+            len1stLine = PrintAtPos(msg[i], x, y + i)
         escResetStyle()
 
     if printTime:
@@ -953,6 +958,9 @@ while loop_state < 4:
     offsetX = term_width - 80
     if offsetX < -9:
         offsetX = -9
+    elif offsetX > 0:
+        offsetX = 0
+    
 
     # print inverted header
     escSetInverted(1)
@@ -1032,23 +1040,23 @@ while loop_state < 4:
                 action_cnt += 1
                 if action == 'Bl':
                     action_time = iniVal['blink_time']
-                    action_text_long = TextToLines(iniVal['long_blink'], term_width - (10 + offsetX) * 2)
+                    action_text_long = TextToLines(iniVal['long_blink'], term_width - (10 + offsetX))
                     action_text = iniVal['short_blink']
                 elif action == 'Bu':
                     action_time = iniVal['butterfly_time']
-                    action_text_long = TextToLines(iniVal['long_butterfly'], term_width - (10 + offsetX) * 2)
+                    action_text_long = TextToLines(iniVal['long_butterfly'], term_width - (10 + offsetX))
                     action_text = iniVal['short_butterfly']
                 elif action == '10':
                     action_time = iniVal['percent10_time']
-                    action_text_long = TextToLines(iniVal['long_10percent'], term_width - (10 + offsetX) * 2)
+                    action_text_long = TextToLines(iniVal['long_10percent'], term_width - (10 + offsetX))
                     action_text = iniVal['short_10percent']
                 elif action == '50':
                     action_time = iniVal['percent50_time']
-                    action_text_long = TextToLines(iniVal['long_50percent'], term_width - (10 + offsetX) * 2)
+                    action_text_long = TextToLines(iniVal['long_50percent'], term_width - (10 + offsetX))
                     action_text = iniVal['short_50percent']
                 elif action == '80':
                     action_time = iniVal['percent80_time']
-                    action_text_long = TextToLines(iniVal['long_80percent'], term_width - (10 + offsetX) * 2)
+                    action_text_long = TextToLines(iniVal['long_80percent'], term_width - (10 + offsetX))
                     action_text = iniVal['short_80percent']
                 else:
                     # Unknown action - fatal error
