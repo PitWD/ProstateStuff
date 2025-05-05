@@ -34,7 +34,7 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.8a"
+appVersion = "0.0.9a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
 appDate = "2025-05-05"
