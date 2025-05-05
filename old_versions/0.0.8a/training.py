@@ -3,13 +3,13 @@ import sys
 import configparser
 import time
 import select
+import tty
 import platform
 
 if os.name == 'nt':  # Windows
     import msvcrt
 else:  # Linux und MacOS
     import termios
-    import tty
 
 # Global variables
 # Colors (to esc.py)
@@ -61,7 +61,7 @@ def LoadSettings(TrainType = 'Default'):
 
     # Read the configuration file
     # Check if file was read successfully
-    if not config.read(config_file_path, encoding='utf-8'):
+    if not config.read(config_file_path):
         NoSettings = True
 
     # Values from Settings.ini
@@ -145,7 +145,7 @@ def LoadSettings(TrainType = 'Default'):
 
     # Read the configuration file
     # Check if file was read successfully
-    if not config.read(config_file_path, encoding='utf-8'):
+    if not config.read(config_file_path):
         NoLanguage = True
 
     # Get Language
@@ -234,7 +234,7 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['Android'] = bool(int(iniVal['Android']))
     iniVal['TriggerScreenSaver'] = bool(int(iniVal['TriggerScreenSaver']))
     # Strip leading and trailing '"' from strings
-    iniVal['version'] = iniVal['version']. strip('"')
+    iniVal['version'] = iniVal['version'].strip('"')
     iniVal['start_sequence'] = iniVal['start_sequence'].strip('"')
     iniVal['main_sequence'] = iniVal['main_sequence'].strip('"')
     iniVal['end_sequence'] = iniVal['end_sequence'].strip('"')
@@ -279,16 +279,16 @@ def TriggerWatchDog():
     system = platform.system()
 
     if system == "Windows":
-        # 'powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('+')"' Simulate Shift-KeyPress - Win10 or higher
+        # Windows: Sim a mouse move - Win10 or higher
+        # 'powershell -Command "[System.Windows.Forms.SendKeys]::SendWait(\'{F15}\')"'
         os.system(iniVal['TriggerScrText_Win'])
 
     elif system == "Darwin":
-        # 'caffeinate -d -u -t 61 &'
+        # 'caffeinate -u -t 90'
         os.system(iniVal['TriggerScrText_Mac'])
     
     elif system == "Linux":
-        # "xset s reset" X11 - no window-manager
-        # "xdotool mousemove_relative 1 0 && xdotool mousemove_relative -- -1 0" probably works with all window-managers
+        # 'xset s reset'
         os.system(iniVal['TriggerScrText_X'])
     
     else:
@@ -584,17 +584,8 @@ def GetKeyPress():
     key= ''
 
     if os.name == 'nt':  # Windows - not working yet
-        while True:
-            if msvcrt.kbhit():
-                c = msvcrt.getch().decode('utf-8')
-                key += c
-            else:
-                if key:
-                    key = KeyToFunction(key)
-                    return key
-                else:
-                    return ''
-                
+        if msvcrt.kbhit():
+            return msvcrt.getch().decode('utf-8')
     elif iOS:  
         # Even its working on all OS, it's very shitty cause of timing issues
         # additional not all hits are all time detected
@@ -771,8 +762,6 @@ def PrintAtPos(text, x, y, clear = 0, right = 0, space = ' '):
         escSetCursorPos(x, y)
     print(text, end='', flush=True)
 
-    return len(text)
-
 # Builds centered text with leading and trailing spaces
 def CenterText(text, width):
     text = str(text)
@@ -855,10 +844,6 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
     term_height = term_size.lines
     loop_cnt = 0
 
-    # All about *PrintTime became necessary for Win to prevent flickering - what a messi OS... :-(
-    lastPrintTime = 0 
-    actPrintTime = 0
-
     if msg:
         # Print "Press ENTER / SPACE"
         if iniVal['Italic']:
@@ -866,20 +851,16 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
         # PrintAtPos(msg, 23, term_height - 5 )
         msg = TextToLines(msg, term_width - x)
         cntLines = len(msg)
-        len1stLine = 0
         for i in range(cntLines):
-            if i > 0:
-                msg[i] = CenterText(msg[i], len1stLine)
-            len1stLine = PrintAtPos(msg[i], x, y + i)
+            PrintAtPos(msg[i], x, y + i)
         escResetStyle()
 
     if printTime:
         # Print time left
         if iniVal['Bold']:
             escSetBold(1)
-        actPrintTime = int(timing - (time.time() - start_time) + 1)
-        PrintAtPos(f"{actPrintTime}", x - 5, y, 3, 1, ' ')
-        lastPrintTime = actPrintTime
+        # PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", 18, term_height - 5, 3, 1, ' ')
+        PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", x - 5, y, 3, 1, ' ')
         escResetStyle()
 
     while time.time() - start_time < timing:
@@ -910,13 +891,10 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
         
         if loop_cnt > 3:
             # Print time left
-            actPrintTime = int(timing - (time.time() - start_time) + 1)
-            if actPrintTime != lastPrintTime:
-                if iniVal['Bold']:
-                    escSetBold(1)
-                PrintAtPos(f"{actPrintTime}", x - 5, y, 3, 1, ' ')
-                escResetStyle()
-                lastPrintTime = actPrintTime
+            if iniVal['Bold']:
+                escSetBold(1)
+            PrintAtPos(f"{int(timing - (time.time() - start_time) + 1)}", x - 5, y, 3, 1, ' ')
+            escResetStyle()
             loop_cnt = 0
 
         # Check on ScreenSaver
@@ -975,9 +953,6 @@ while loop_state < 4:
     offsetX = term_width - 80
     if offsetX < -9:
         offsetX = -9
-    elif offsetX > 0:
-        offsetX = 0
-    
 
     # print inverted header
     escSetInverted(1)
@@ -1057,23 +1032,23 @@ while loop_state < 4:
                 action_cnt += 1
                 if action == 'Bl':
                     action_time = iniVal['blink_time']
-                    action_text_long = TextToLines(iniVal['long_blink'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['long_blink'], term_width - (10 + offsetX) * 2)
                     action_text = iniVal['short_blink']
                 elif action == 'Bu':
                     action_time = iniVal['butterfly_time']
-                    action_text_long = TextToLines(iniVal['long_butterfly'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['long_butterfly'], term_width - (10 + offsetX) * 2)
                     action_text = iniVal['short_butterfly']
                 elif action == '10':
                     action_time = iniVal['percent10_time']
-                    action_text_long = TextToLines(iniVal['long_10percent'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['long_10percent'], term_width - (10 + offsetX) * 2)
                     action_text = iniVal['short_10percent']
                 elif action == '50':
                     action_time = iniVal['percent50_time']
-                    action_text_long = TextToLines(iniVal['long_50percent'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['long_50percent'], term_width - (10 + offsetX) * 2)
                     action_text = iniVal['short_50percent']
                 elif action == '80':
                     action_time = iniVal['percent80_time']
-                    action_text_long = TextToLines(iniVal['long_80percent'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['long_80percent'], term_width - (10 + offsetX) * 2)
                     action_text = iniVal['short_80percent']
                 else:
                     # Unknown action - fatal error
