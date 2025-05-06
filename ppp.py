@@ -847,14 +847,11 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
     global iOS
     global TriggerTime
     global iniVal
-    global term_width
+    global termSize
 
     timing = float(timing)
     start_time = time.time()
-    term_size = escGetTerminalSize()
-    term_width = term_size.columns
-    term_height = term_size.lines
-    loop_cnt = 0
+    loopCnt = 0
 
     # All about *PrintTime became necessary for Win to prevent flickering - what a messi OS... :-(
     lastPrintTime = 0 
@@ -864,8 +861,8 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
         # Print "Press ENTER / SPACE"
         if iniVal['Italic']:
             escSetItalic(1)
-        # PrintAtPos(msg, 23, term_height - 5 )
-        msg = TextToLines(msg, term_width - x)
+        # PrintAtPos(msg, 23, termSize.lines - 5 )
+        msg = TextToLines(msg, termSize.columns - x)
         cntLines = len(msg)
         len1stLine = 0
         for i in range(cntLines):
@@ -907,9 +904,9 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
         elif IsQuit(key):
             QuitApp()
         
-        loop_cnt += 1
+        loopCnt += 1
         
-        if loop_cnt > 3:
+        if loopCnt > 3:
             # Print time left
             actPrintTime = int(timing - (time.time() - start_time) + 1)
             if actPrintTime != lastPrintTime:
@@ -918,7 +915,7 @@ def run_loop(timing, msg = '', x = 1, y = 1, printTime = 1):
                 PrintAtPos(f"{actPrintTime}", x - 5, y, 3, 1, ' ')
                 escResetStyle()
                 lastPrintTime = actPrintTime
-            loop_cnt = 0
+            loopCnt = 0
 
         # Check on ScreenSaver
         if iniVal['TriggerScreenSaver']:
@@ -952,28 +949,29 @@ if iniVal['Debug']:
 if iniVal['StartDelay'] > 0:
     # Delay before starting the training
     escCLS()
+    # Get terminal size (before eventually changing it - e.g hiding keyboard)
+    termSize = escGetTerminalSize()
     run_loop(iniVal['StartDelay'], iniVal['msgStartDelay'], 10, 3)
 
-loop_state = 1  # 1=Start, 2=Main, 3=End
-loop_cnt = 0
-loop_time = 0
+loopState = 1  # 1=Start, 2=Main, 3=End
+loopCnt = 0
+loopTime = 0
 cntMaxDescription = 0
 cntDescription = 0
-# Get terminal size
-term_size = escGetTerminalSize()
-term_width = term_size.columns
-term_height = term_size.lines
+
+# Get terminal size - final size - no size change recognition during runtime 
+termSize = escGetTerminalSize()
 
 # Training Loop
-while loop_state < 4:
+while loopState < 4:
     
     escCLS()
 
     # Text positions
-    posTime = term_height - (term_height - 24) - 5
-    posAction = term_height - (term_height - 24) - 3
-    posRepeat = term_height - (term_height - 24) -2
-    offsetX = term_width - 80
+    posTime = termSize.lines - (termSize.lines - 24) - 5
+    posAction = termSize.lines - (termSize.lines - 24) - 3
+    posRepeat = termSize.lines - (termSize.lines - 24) -2
+    offsetX = termSize.columns - 80
     if offsetX < -9:
         offsetX = -9
     elif offsetX > 0:
@@ -986,11 +984,11 @@ while loop_state < 4:
         escSetBold(1)
     strHeader = f"{appName} {appVersion} - {appCopyright} {appAuthor} - {appDate}"
     # Maybe too long
-    strHeader = TextToLines(strHeader, term_width)
+    strHeader = TextToLines(strHeader, termSize.columns)
     # center all lines
     cntHeaderLines = 0
     for i, line in enumerate(strHeader):
-        strHeader[i] = CenterText(line, term_width)
+        strHeader[i] = CenterText(line, termSize.columns)
         PrintAtPos(strHeader[i], 1, i + 1)
         cntHeaderLines += 1
     escSetInverted(0)
@@ -1002,24 +1000,24 @@ while loop_state < 4:
     escResetStyle()
 
     # text - actual procedure - Centered double width or standard bold_italic
-    if loop_state == 1:
+    if loopState == 1:
         strProcedure = iniVal['strStart']
-    elif loop_state == 2:
+    elif loopState == 2:
         strProcedure = iniVal['strMain']
     else:
         strProcedure = iniVal['strEnd']
 
     # Width - depending on settings DoubleWidth
     if iniVal['DoubleWidth'] or iniVal['SimDoubleWidth']:
-        term_width_hlp = term_width // 2
+        termWidthHlp = termSize.columns // 2
     else:
-        term_width_hlp = term_width
+        termWidthHlp = termSize.columns
 
-    strProcedure = TextToLines(strProcedure, term_width_hlp)
+    strProcedure = TextToLines(strProcedure, termWidthHlp)
     # Center all lines
     cntProcedureLines = 0
     for i, line in enumerate(strProcedure):
-        strProcedure[i] = CenterText(line, term_width_hlp)
+        strProcedure[i] = CenterText(line, termWidthHlp)
         cntProcedureLines += 1
 
     if not iniVal['DoubleWidth']:
@@ -1038,10 +1036,10 @@ while loop_state < 4:
 
     escResetStyle()
 
-    if loop_state == 1:
+    if loopState == 1:
         loop_list = iniVal['startSequence']
         loop_repeat = iniVal['startRepeat']
-    elif loop_state == 2:
+    elif loopState == 2:
         loop_list = iniVal['mainSequence']
         loop_repeat = iniVal['mainRepeat']
     else:
@@ -1058,39 +1056,39 @@ while loop_state < 4:
                 action_cnt += 1
                 if action == 'Bl':
                     action_time = iniVal['timeBlink']
-                    action_text_long = TextToLines(iniVal['strLongBlink'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['strLongBlink'], termSize.columns - (10 + offsetX))
                     action_text = iniVal['strShortBlink']
                 elif action == 'Bu':
                     action_time = iniVal['timeButterfly']
-                    action_text_long = TextToLines(iniVal['strLongButterfly'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['strLongButterfly'], termSize.columns - (10 + offsetX))
                     action_text = iniVal['strShortButterfly']
                 elif action == '10':
                     action_time = iniVal['time10']
-                    action_text_long = TextToLines(iniVal['strLong10'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['strLong10'], termSize.columns - (10 + offsetX))
                     action_text = iniVal['strShort10']
                 elif action == '50':
                     action_time = iniVal['time50']
-                    action_text_long = TextToLines(iniVal['strLong50'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['strLong50'], termSize.columns - (10 + offsetX))
                     action_text = iniVal['strShort50']
                 elif action == '80':
                     action_time = iniVal['time80']
-                    action_text_long = TextToLines(iniVal['strLong80'], term_width - (10 + offsetX))
+                    action_text_long = TextToLines(iniVal['strLong80'], termSize.columns - (10 + offsetX))
                     action_text = iniVal['strShort80']
                 else:
                     # Unknown action - fatal error
                     escSetColor(cRed, cBg)
-                    PrintAtPos(f"Unknown action: {action} in sequence {strProcedure}", 1, term_height)
+                    PrintAtPos(f"Unknown action: {action} in sequence {strProcedure}", 1, termSize.lines)
                     QuitApp(0)
 
                 # Print the action. Centered - Double height or simulated bold double width
 
-                term_width_hlp = term_width // 2
+                termWidthHlp = termSize.columns // 2
 
-                action_text = TextToLines(action_text, term_width_hlp)
+                action_text = TextToLines(action_text, termWidthHlp)
                 # Center all lines
                 cntActionLines = 0
                 for i, line in enumerate(action_text):
-                    action_text[i] = CenterText(line, term_width_hlp)
+                    action_text[i] = CenterText(line, termWidthHlp)
                     cntActionLines += 1
 
                 if not iniVal['DoubleHeight']:
@@ -1115,7 +1113,7 @@ while loop_state < 4:
                 if iniVal['Italic']:
                     escSetItalic(1)
                 for i, line in enumerate(action_text_long):
-                    PrintAtPos(line, 10 + offsetX, 4 + cntActionLines + cntHeaderLines + cntProcedureLines + i, term_width - (10 + offsetX))
+                    PrintAtPos(line, 10 + offsetX, 4 + cntActionLines + cntHeaderLines + cntProcedureLines + i, termSize.columns - (10 + offsetX))
                     cntDescription += 1
                 
                 if cntDescription > cntMaxDescription:
@@ -1124,7 +1122,7 @@ while loop_state < 4:
                 if cntDescription < cntMaxDescription:
                     # Clear the remaining lines
                     for i in range(cntDescription, cntMaxDescription):
-                        PrintAtPos(' ', 10 + offsetX, 6 + cntHeaderLines + cntHeaderLines + cntProcedureLines + i, term_width - (10 + offsetX))
+                        PrintAtPos(' ', 10 + offsetX, 6 + cntHeaderLines + cntHeaderLines + cntProcedureLines + i, termSize.columns - (10 + offsetX))
                 
                 escResetStyle()
 
@@ -1136,28 +1134,28 @@ while loop_state < 4:
 
                 # Run the timing loop for the specified time 
                 escSetColor(cGreen, cBg)
-                loop_time = run_loop(action_time, iniVal['msgEnterSpace'], 23 + offsetX, posTime)
+                loopTime = run_loop(action_time, iniVal['msgEnterSpace'], 23 + offsetX, posTime)
                 escResetColor()
 
                 # Clear the timer - text
-                PrintAtPos(' ' * (term_width - (18 + offsetX)), 18 + offsetX, posTime)
+                PrintAtPos(' ' * (termSize.columns - (18 + offsetX)), 18 + offsetX, posTime)
                 # Clear the action and description
                 for i in range(0, cntHeaderLines + cntDescription + cntActionLines + 3):
-                    PrintAtPos(' ', 1, 4 + cntHeaderLines + i, term_width)
+                    PrintAtPos(' ', 1, 4 + cntHeaderLines + i, termSize.columns)
 
                 if ((action_cnt < action_len) or (loop + 1 < loop_repeat)) and not action == '10' and not action == '50':
                     # Pause between actions
                     escSetColor(cBlue, cBg)
                     if iniVal['Automatic']:
-                        # PrintAtPos(iniVal['msgEnterSpace'], 22, term_height - 5 )
+                        # PrintAtPos(iniVal['msgEnterSpace'], 22, termSize.lines - 5 )
                         run_loop(iniVal['timeAutoDelay'], iniVal['msgEnterSpace'], 23 + offsetX, posTime)
                     else:
                         PrintAtPos({iniVal['msgEnter']}, 23 + offsetX, posTime)
                     escResetColor()
 
     # Clear Procedure line
-    PrintAtPos(' ' * term_width, 1, cntHeaderLines + 2, 0, term_width)
-    if loop_state < 3:
+    PrintAtPos(' ' * termSize.columns, 1, cntHeaderLines + 2, 0, termSize.columns)
+    if loopState < 3:
         # Pause between Procedures (Start -> End)
         if iniVal['Automatic']:
             run_loop(int(iniVal['timeAutoDelay'] * 1.5), iniVal['msgEnterSpace'], 23 + offsetX, posTime)
@@ -1165,7 +1163,7 @@ while loop_state < 4:
             PrintAtPos({iniVal['msgEnter']}, 23 + offsetX, posTime)
 
 
-    loop_state += 1
+    loopState += 1
 
 QuitApp()
 
