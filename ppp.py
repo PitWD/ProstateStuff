@@ -37,7 +37,7 @@ appName = "Powerful Pee & Potence"
 appVersion = "0.0.9a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
-appDate = "2025-05-05"
+appDate = "06.05.2025"
 
 # OS
 iOS = 0  # iOS special (a-shell)
@@ -50,6 +50,7 @@ def LoadSettings(TrainType = 'Default'):
 
     global iOS
 
+    # if INIs missing
     NoSettings = False
     NoLanguage = False
 
@@ -66,23 +67,23 @@ def LoadSettings(TrainType = 'Default'):
 
     # Values from Settings.ini
     iniVal = {
-        'version': config.get('Global', 'Version') if config.has_option('Global', 'Version') else '1.0.0',
-        'debug': config.get('Global', 'Debug') if config.has_option('Global', 'Debug') else '0',
+        'Version': config.get('Global', 'Version') if config.has_option('Global', 'Version') else '1.0.0',
+        'Debug': config.get('Global', 'Debug') if config.has_option('Global', 'Debug') else '0',
         'StartDelay': config.get('Global', 'StartDelay') if config.has_option('Global', 'StartDelay') else '1',
-        'blink_time': config.get(TrainType, 'Blink') if config.has_option(TrainType, 'Blink') else '60',
-        'butterfly_time': config.get(TrainType, 'Butterfly') if config.has_option(TrainType, 'Butterfly') else '10',
-        'percent10_time': config.get(TrainType, '10Percent') if config.has_option(TrainType, '10Percent') else '10',
-        'percent50_time': config.get(TrainType, '50Percent') if config.has_option(TrainType, '50Percent') else '10',
-        'percent80_time': config.get(TrainType, '80Percent') if config.has_option(TrainType, '80Percent') else '10',
-        'start_sequence': config.get(TrainType, 'Start') if config.has_option(TrainType, 'Start') else 'Bu_Bl',
-        'start_repeat': config.get(TrainType, 'RepeatStart') if config.has_option(TrainType, 'RepeatStart') else '2',
-        'main_sequence': config.get(TrainType, 'Main') if config.has_option(TrainType, 'Main') else 'Bu_10_50_80_Bu_10_50_80_Bu_Bl',
-        'main_repeat': config.get(TrainType, 'RepeatMain') if config.has_option(TrainType, 'RepeatMain') else '6',
-        'end_sequence': config.get(TrainType, 'End') if config.has_option(TrainType, 'End') else 'Bu',
-        'end_repeat': config.get(TrainType, 'RepeatEnd') if config.has_option(TrainType, 'RepeatEnd') else '1',
-        'language': config.get('Global', 'Language') if config.has_option('Global', 'Language') else '"EN"',
-        'automatic': config.get('Global', 'Automatic') if config.has_option('Global', 'Automatic') else '1',
-        'auto_delay_time': config.get('Global', 'AutoDelayTime') if config.has_option('Global', 'AutoDelayTime') else '3',
+        'timeBlink': config.get(TrainType, 'Blink') if config.has_option(TrainType, 'Blink') else '60',
+        'timeButterfly': config.get(TrainType, 'Butterfly') if config.has_option(TrainType, 'Butterfly') else '10',
+        'time10': config.get(TrainType, '10Percent') if config.has_option(TrainType, '10Percent') else '10',
+        'time50': config.get(TrainType, '50Percent') if config.has_option(TrainType, '50Percent') else '10',
+        'time80': config.get(TrainType, '80Percent') if config.has_option(TrainType, '80Percent') else '10',
+        'startSequence': config.get(TrainType, 'Start') if config.has_option(TrainType, 'Start') else 'Bu_Bl',
+        'startRepeat': config.get(TrainType, 'RepeatStart') if config.has_option(TrainType, 'RepeatStart') else '2',
+        'mainSequence': config.get(TrainType, 'Main') if config.has_option(TrainType, 'Main') else 'Bu_10_50_80_Bu_10_50_80_Bu_Bl',
+        'mainRepeat': config.get(TrainType, 'RepeatMain') if config.has_option(TrainType, 'RepeatMain') else '6',
+        'endSequence': config.get(TrainType, 'End') if config.has_option(TrainType, 'End') else 'Bu',
+        'endRepeat': config.get(TrainType, 'RepeatEnd') if config.has_option(TrainType, 'RepeatEnd') else '1',
+        'Language': config.get('Global', 'Language') if config.has_option('Global', 'Language') else '"EN"',
+        'Automatic': config.get('Global', 'Automatic') if config.has_option('Global', 'Automatic') else '1',
+        'timeAutoDelay': config.get('Global', 'AutoDelayTime') if config.has_option('Global', 'AutoDelayTime') else '3',
         'DoubleHeight': config.get('Global', 'DoubleHeight') if config.has_option('Global', 'DoubleHeight') else '0',
         'SimDoubleHeight': config.get('Global', 'SimDoubleHeight') if config.has_option('Global', 'SimDoubleHeight') else '0',
         'DoubleWidth': config.get('Global', 'DoubleWidth') if config.has_option('Global', 'DoubleWidth') else '0',
@@ -108,9 +109,9 @@ def LoadSettings(TrainType = 'Default'):
             config.set('Global', 'Version', iniVal['version'])
             config.set('Global', 'Debug', iniVal['debug'])
             config.set('Global', 'StartDelay', iniVal['StartDelay'])
-            config.set('Global', 'Language', iniVal['language'])
-            config.set('Global', 'Automatic', iniVal['automatic'])
-            config.set('Global', 'AutoDelayTime', iniVal['auto_delay_time'])
+            config.set('Global', 'Language', iniVal['Language'])
+            config.set('Global', 'Automatic', iniVal['Automatic'])
+            config.set('Global', 'AutoDelayTime', iniVal['timeAutoDelay'])
             config.set('Global', 'DoubleHeight', iniVal['DoubleHeight'])
             config.set('Global', 'SimDoubleHeight', iniVal['SimDoubleHeight'])
             config.set('Global', 'DoubleWidth', iniVal['DoubleWidth'])
@@ -127,17 +128,17 @@ def LoadSettings(TrainType = 'Default'):
             config.set('Global', 'TriggerScrText_Win', iniVal['TriggerScrText_Win'])
             config.set('Global', 'TriggerScrText_Other', iniVal['TriggerScrText_Other'])
             config.add_section(TrainType)
-            config.set(TrainType, 'Blink', iniVal['blink_time'])
-            config.set(TrainType, 'Butterfly', iniVal['butterfly_time'])
-            config.set(TrainType, '10Percent', iniVal['percent10_time'])
-            config.set(TrainType, '50Percent', iniVal['percent50_time'])
-            config.set(TrainType, '80Percent', iniVal['percent80_time'])
-            config.set(TrainType, 'Start', iniVal['start_sequence'])
-            config.set(TrainType, 'RepeatStart', iniVal['start_repeat'])
-            config.set(TrainType, 'Main', iniVal['main_sequence'])
-            config.set(TrainType, 'RepeatMain', iniVal['main_repeat'])
-            config.set(TrainType, 'End', iniVal['end_sequence'])
-            config.set(TrainType, 'RepeatEnd', iniVal['end_repeat'])
+            config.set(TrainType, 'Blink', iniVal['timeBlink'])
+            config.set(TrainType, 'Butterfly', iniVal['timeButterfly'])
+            config.set(TrainType, '10Percent', iniVal['time10'])
+            config.set(TrainType, '50Percent', iniVal['time50'])
+            config.set(TrainType, '80Percent', iniVal['time80'])
+            config.set(TrainType, 'Start', iniVal['startSequence'])
+            config.set(TrainType, 'RepeatStart', iniVal['startRepeat'])
+            config.set(TrainType, 'Main', iniVal['mainSequence'])
+            config.set(TrainType, 'RepeatMain', iniVal['mainRepeat'])
+            config.set(TrainType, 'End', iniVal['endSequence'])
+            config.set(TrainType, 'RepeatEnd', iniVal['endRepeat'])
             config.write(configfile)
 
     # Define the path to Language.ini
@@ -149,31 +150,31 @@ def LoadSettings(TrainType = 'Default'):
         NoLanguage = True
 
     # Get Language
-    iniVal['language'] = iniVal['language'].strip('"')
-    LangShort = 'ActionShort' + iniVal['language']
-    LangLong = 'ActionLong' + iniVal['language']
-    LangProcedure = 'Procedures' + iniVal['language']
-    LangMessage = 'Messages' + iniVal['language']
+    iniVal['Language'] = iniVal['Language'].strip('"')
+    LangShort = 'ActionShort' + iniVal['Language']
+    LangLong = 'ActionLong' + iniVal['Language']
+    LangProcedure = 'Procedures' + iniVal['Language']
+    LangMessage = 'Messages' + iniVal['Language']
 
     # Values from Language.ini
     lang_values = {
-        'short_blink': config.get(LangShort, 'Blink') if config.has_option(LangShort, 'Blink') else '"Blink"',
-        'short_butterfly': config.get(LangShort, 'Butterfly') if config.has_option(LangShort, 'Butterfly') else '"Butterfly / Windshield Wiper"',
-        'short_10percent': config.get(LangShort, '10Percent') if config.has_option(LangShort, '10Percent') else '"10%% Tension"',
-        'short_50percent': config.get(LangShort, '50Percent') if config.has_option(LangShort, '50Percent') else '"50%% Tension"',
-        'short_80percent': config.get(LangShort, '80Percent') if config.has_option(LangShort, '80Percent') else '"80%% Tension"',
-        'long_blink': config.get(LangLong, 'Blink') if config.has_option(LangLong, 'Blink') else '"Tighten / Relax - As if you want to interrupt minimal urine flow."',
-        'long_butterfly': config.get(LangLong, 'Butterfly') if config.has_option(LangLong, 'Butterfly') else '"Relaxed left and right, or opening and closing the legs as if suppressing the urge to urinate."',
-        'long_10percent': config.get(LangLong, '10Percent') if config.has_option(LangLong, '10Percent') else '"Hold the tension like Blinking - As if you want to interrupt minimal urine flow."',
-        'long_50percent': config.get(LangLong, '50Percent') if config.has_option(LangLong, '50Percent') else '"Hold the tension like 50%% Tension - As if you want to interrupt medium urine flow."',
-        'long_80percent': config.get(LangLong, '80Percent') if config.has_option(LangLong, '80Percent') else '"Hold the tension like 80%% Tension - As if you want to interrupt strong urine flow. The anal sphincter is only activated here."',
-        'start_procedure': config.get(LangProcedure, 'Start') if config.has_option(LangProcedure, 'Start') else '"Start procedure"',
-        'main_procedure': config.get(LangProcedure, 'Main') if config.has_option(LangProcedure, 'Main') else '"Main procedure"',
-        'end_procedure': config.get(LangProcedure, 'End') if config.has_option(LangProcedure, 'End') else '"End procedure"',
-        'msg_press_enter': config.get(LangMessage, 'PressEnter') if config.has_option(LangMessage, 'PressEnter') else '"Press Enter to continue..."',
-        'msg_press_enter_space': config.get(LangMessage, 'PressEnterSpace') if config.has_option(LangMessage, 'PressEnterSpace') else '"Press ENTER to cancel, SPACE to pause"',
-        'msg_iOS_enter_space': config.get(LangMessage, 'iOSEnterSpace') if config.has_option(LangMessage, 'iOSEnterSpace') else '"Press SPACE + ENTER to cancel, ENTER to pause"',
-        'msg_start_delay': config.get(LangMessage, 'StartDelay') if config.has_option(LangMessage, 'StartDelay') else '"Start delay"',
+        'strShortBlink': config.get(LangShort, 'Blink') if config.has_option(LangShort, 'Blink') else '"Blink"',
+        'strShortButterfly': config.get(LangShort, 'Butterfly') if config.has_option(LangShort, 'Butterfly') else '"Butterfly / Windshield Wiper"',
+        'strShort10': config.get(LangShort, '10Percent') if config.has_option(LangShort, '10Percent') else '"10%% Tension"',
+        'strShort50': config.get(LangShort, '50Percent') if config.has_option(LangShort, '50Percent') else '"50%% Tension"',
+        'strShort80': config.get(LangShort, '80Percent') if config.has_option(LangShort, '80Percent') else '"80%% Tension"',
+        'strLongBlink': config.get(LangLong, 'Blink') if config.has_option(LangLong, 'Blink') else '"Tighten / Relax - As if you want to interrupt minimal urine flow."',
+        'strLongButterfly': config.get(LangLong, 'Butterfly') if config.has_option(LangLong, 'Butterfly') else '"Relaxed left and right, or opening and closing the legs as if suppressing the urge to urinate."',
+        'strLong10': config.get(LangLong, '10Percent') if config.has_option(LangLong, '10Percent') else '"Hold the tension like Blinking - As if you want to interrupt minimal urine flow."',
+        'strLong50': config.get(LangLong, '50Percent') if config.has_option(LangLong, '50Percent') else '"Hold the tension like 50%% Tension - As if you want to interrupt medium urine flow."',
+        'strLong80': config.get(LangLong, '80Percent') if config.has_option(LangLong, '80Percent') else '"Hold the tension like 80%% Tension - As if you want to interrupt strong urine flow. The anal sphincter is only activated here."',
+        'strStart': config.get(LangProcedure, 'Start') if config.has_option(LangProcedure, 'Start') else '"Start procedure"',
+        'strMain': config.get(LangProcedure, 'Main') if config.has_option(LangProcedure, 'Main') else '"Main procedure"',
+        'strEnd': config.get(LangProcedure, 'End') if config.has_option(LangProcedure, 'End') else '"End procedure"',
+        'msgEnter': config.get(LangMessage, 'PressEnter') if config.has_option(LangMessage, 'PressEnter') else '"Press Enter to continue..."',
+        'msgEnterSpace': config.get(LangMessage, 'PressEnterSpace') if config.has_option(LangMessage, 'PressEnterSpace') else '"Press ENTER to cancel, SPACE to pause"',
+        'msgSpaceEnter': config.get(LangMessage, 'iOSEnterSpace') if config.has_option(LangMessage, 'iOSEnterSpace') else '"Press SPACE + ENTER to cancel, ENTER to pause"',
+        'msgStartDelay': config.get(LangMessage, 'StartDelay') if config.has_option(LangMessage, 'StartDelay') else '"Start delay"',
     }
 
     # Save default values to Language.ini
@@ -181,26 +182,26 @@ def LoadSettings(TrainType = 'Default'):
         # Save default values to Language.ini
         with open(config_file_path, 'w') as configfile:
             config.add_section(LangShort)
-            config.set(LangShort, 'Blink', lang_values['short_blink'])
-            config.set(LangShort, 'Butterfly', lang_values['short_butterfly'])
-            config.set(LangShort, '10Percent', lang_values['short_10percent'])
-            config.set(LangShort, '50Percent', lang_values['short_50percent'])
-            config.set(LangShort, '80Percent', lang_values['short_80percent'])
+            config.set(LangShort, 'Blink', lang_values['strShortBlink'])
+            config.set(LangShort, 'Butterfly', lang_values['strShortButterfly'])
+            config.set(LangShort, '10Percent', lang_values['strShort10'])
+            config.set(LangShort, '50Percent', lang_values['strShort50'])
+            config.set(LangShort, '80Percent', lang_values['strShort80'])
             config.add_section(LangLong)
-            config.set(LangLong, 'Blink', lang_values['long_blink'])
-            config.set(LangLong, 'Butterfly', lang_values['long_butterfly'])
-            config.set(LangLong, '10Percent', lang_values['long_10percent'])
-            config.set(LangLong, '50Percent', lang_values['long_50percent'])
-            config.set(LangLong, '80Percent', lang_values['long_80percent'])
+            config.set(LangLong, 'Blink', lang_values['strLongBlink'])
+            config.set(LangLong, 'Butterfly', lang_values['strLongButterfly'])
+            config.set(LangLong, '10Percent', lang_values['strLong10'])
+            config.set(LangLong, '50Percent', lang_values['strLong50'])
+            config.set(LangLong, '80Percent', lang_values['strLong80'])
             config.add_section(LangProcedure)
-            config.set(LangProcedure, 'Start', lang_values['start_procedure'])
-            config.set(LangProcedure, 'Main', lang_values['main_procedure'])
-            config.set(LangProcedure, 'End', lang_values['end_procedure'])
+            config.set(LangProcedure, 'Start', lang_values['strStart'])
+            config.set(LangProcedure, 'Main', lang_values['strMain'])
+            config.set(LangProcedure, 'End', lang_values['strEnd'])
             config.add_section(LangMessage)
-            config.set(LangMessage, 'PressEnter', lang_values['msg_press_enter'])
-            config.set(LangMessage, 'PressEnterSpace', lang_values['msg_press_enter_space'])
-            config.set(LangMessage, 'iOSEnterSpace', lang_values['msg_iOS_enter_space'])
-            config.set(LangMessage, 'StartDelay', lang_values['msg_start_delay'])
+            config.set(LangMessage, 'PressEnter', lang_values['msgEnter'])
+            config.set(LangMessage, 'PressEnterSpace', lang_values['msgEnterSpace'])
+            config.set(LangMessage, 'iOSEnterSpace', lang_values['msgSpaceEnter'])
+            config.set(LangMessage, 'StartDelay', lang_values['msgStartDelay'])
             config.write(configfile)
         # Restart App for right parsing %%
         os.execv(sys.executable, ['python3'] + sys.argv)
@@ -209,20 +210,20 @@ def LoadSettings(TrainType = 'Default'):
     iniVal.update(lang_values)
     
     # Int values to integers
-    iniVal['blink_time'] = int(iniVal['blink_time'])
-    iniVal['butterfly_time'] = int(iniVal['butterfly_time'])
-    iniVal['percent10_time'] = int(iniVal['percent10_time'])
-    iniVal['percent50_time'] = int(iniVal['percent50_time'])
-    iniVal['percent80_time'] = int(iniVal['percent80_time'])
-    iniVal['start_repeat'] = int(iniVal['start_repeat'])
-    iniVal['main_repeat'] = int(iniVal['main_repeat'])
-    iniVal['end_repeat'] = int(iniVal['end_repeat'])
-    iniVal['auto_delay_time'] = int(iniVal['auto_delay_time'])
+    iniVal['timeBlink'] = int(iniVal['timeBlink'])
+    iniVal['timeButterfly'] = int(iniVal['timeButterfly'])
+    iniVal['time10'] = int(iniVal['time10'])
+    iniVal['time50'] = int(iniVal['time50'])
+    iniVal['time80'] = int(iniVal['time80'])
+    iniVal['startRepeat'] = int(iniVal['startRepeat'])
+    iniVal['mainRepeat'] = int(iniVal['mainRepeat'])
+    iniVal['endRepeat'] = int(iniVal['endRepeat'])
+    iniVal['timeAutoDelay'] = int(iniVal['timeAutoDelay'])
     iniVal['TriggerScrTime'] = int(iniVal['TriggerScrTime'])
     iniVal['StartDelay'] = int(iniVal['StartDelay'])
     # Bool values to boolean
-    iniVal['automatic'] = bool(int(iniVal['automatic']))
-    iniVal['debug'] = bool(int(iniVal['debug']))
+    iniVal['Automatic'] = bool(int(iniVal['Automatic']))
+    iniVal['Debug'] = bool(int(iniVal['Debug']))
     iniVal['DoubleHeight'] = bool(int(iniVal['DoubleHeight']))
     iniVal['SimDoubleHeight'] = bool(int(iniVal['SimDoubleHeight']))
     iniVal['DoubleWidth'] = bool(int(iniVal['DoubleWidth']))
@@ -234,40 +235,40 @@ def LoadSettings(TrainType = 'Default'):
     iniVal['Android'] = bool(int(iniVal['Android']))
     iniVal['TriggerScreenSaver'] = bool(int(iniVal['TriggerScreenSaver']))
     # Strip leading and trailing '"' from strings
-    iniVal['version'] = iniVal['version']. strip('"')
-    iniVal['start_sequence'] = iniVal['start_sequence'].strip('"')
-    iniVal['main_sequence'] = iniVal['main_sequence'].strip('"')
-    iniVal['end_sequence'] = iniVal['end_sequence'].strip('"')
-    iniVal['short_blink'] = iniVal['short_blink'].strip('"')
-    iniVal['short_butterfly'] = iniVal['short_butterfly'].strip('"')
-    iniVal['short_10percent'] = iniVal['short_10percent'].strip('"')
-    iniVal['short_50percent'] = iniVal['short_50percent'].strip('"')
-    iniVal['short_80percent'] = iniVal['short_80percent'].strip('"')
-    iniVal['long_blink'] = iniVal['long_blink'].strip('"')
-    iniVal['long_butterfly'] = iniVal['long_butterfly'].strip('"')
-    iniVal['long_10percent'] = iniVal['long_10percent'].strip('"')
-    iniVal['long_50percent'] = iniVal['long_50percent'].strip('"')
-    iniVal['long_80percent'] = iniVal['long_80percent'].strip('"')
-    iniVal['start_procedure'] = iniVal['start_procedure'].strip('"')
-    iniVal['main_procedure'] = iniVal['main_procedure'].strip('"')
-    iniVal['end_procedure'] = iniVal['end_procedure'].strip('"')
-    iniVal['msg_press_enter'] = iniVal['msg_press_enter'].strip('"')
-    iniVal['msg_press_enter_space'] = iniVal['msg_press_enter_space'].strip('"')
-    iniVal['msg_iOS_enter_space'] = iniVal['msg_iOS_enter_space'].strip('"')
-    iniVal['msg_start_delay'] = iniVal['msg_start_delay'].strip('"')
+    iniVal['Version'] = iniVal['Version']. strip('"')
+    iniVal['startSequence'] = iniVal['startSequence'].strip('"')
+    iniVal['mainSequence'] = iniVal['mainSequence'].strip('"')
+    iniVal['endSequence'] = iniVal['endSequence'].strip('"')
+    iniVal['strShortBlink'] = iniVal['strShortBlink'].strip('"')
+    iniVal['strShortButterfly'] = iniVal['strShortButterfly'].strip('"')
+    iniVal['strShort10'] = iniVal['strShort10'].strip('"')
+    iniVal['strShort50'] = iniVal['strShort50'].strip('"')
+    iniVal['strShort80'] = iniVal['strShort80'].strip('"')
+    iniVal['strLongBlink'] = iniVal['strLongBlink'].strip('"')
+    iniVal['strLongButterfly'] = iniVal['strLongButterfly'].strip('"')
+    iniVal['strLong10'] = iniVal['strLong10'].strip('"')
+    iniVal['strLong50'] = iniVal['strLong50'].strip('"')
+    iniVal['strLong80'] = iniVal['strLong80'].strip('"')
+    iniVal['strStart'] = iniVal['strStart'].strip('"')
+    iniVal['strMain'] = iniVal['strMain'].strip('"')
+    iniVal['strEnd'] = iniVal['strEnd'].strip('"')
+    iniVal['msgEnter'] = iniVal['msgEnter'].strip('"')
+    iniVal['msgEnterSpace'] = iniVal['msgEnterSpace'].strip('"')
+    iniVal['msgSpaceEnter'] = iniVal['msgSpaceEnter'].strip('"')
+    iniVal['msgStartDelay'] = iniVal['msgStartDelay'].strip('"')
     iniVal['TriggerScrText_X'] = iniVal['TriggerScrText_X'].strip('"')
     iniVal['TriggerScrText_Mac'] = iniVal['TriggerScrText_Mac'].strip('"')
     iniVal['TriggerScrText_Win'] = iniVal['TriggerScrText_Win'].strip("'")  # Win string is encapsulated in single quotes
     iniVal['TriggerScrText_Other'] = iniVal['TriggerScrText_Other'].strip('"')
 
     # Make lists from sequences (" " and "_" are legal separators)
-    iniVal['start_sequence'] = iniVal['start_sequence'].replace(' ', '_').split('_')
-    iniVal['main_sequence'] = iniVal['main_sequence'].replace(' ', '_').split('_')
-    iniVal['end_sequence'] = iniVal['end_sequence'].replace(' ', '_').split('_')
+    iniVal['startSequence'] = iniVal['startSequence'].replace(' ', '_').split('_')
+    iniVal['mainSequence'] = iniVal['mainSequence'].replace(' ', '_').split('_')
+    iniVal['endSequence'] = iniVal['endSequence'].replace(' ', '_').split('_')
 
     if iniVal['iOS']:
         # iOS (a-shell) special - swap Enter and Space 
-        iniVal['msg_press_enter_space'] = iniVal['msg_iOS_enter_space']
+        iniVal['msgEnterSpace'] = iniVal['msgSpaceEnter']
         iOS = 1
 
     return iniVal
@@ -941,7 +942,7 @@ iniVal = LoadSettings(TrainType)
 escCursorVisible(0)  # Hide cursor
 setEcho(0)  # Disable echo
 
-if iniVal['debug']:
+if iniVal['Debug']:
     escCLS()
     print(f"Debug mode is ON. Loaded settings for {TrainType}:\n")
     for key, value in iniVal.items():
@@ -951,7 +952,7 @@ if iniVal['debug']:
 if iniVal['StartDelay'] > 0:
     # Delay before starting the training
     escCLS()
-    run_loop(iniVal['StartDelay'], iniVal['msg_start_delay'], 10, 3)
+    run_loop(iniVal['StartDelay'], iniVal['msgStartDelay'], 10, 3)
 
 loop_state = 1  # 1=Start, 2=Main, 3=End
 loop_cnt = 0
@@ -1002,11 +1003,11 @@ while loop_state < 4:
 
     # text - actual procedure - Centered double width or standard bold_italic
     if loop_state == 1:
-        strProcedure = iniVal['start_procedure']
+        strProcedure = iniVal['strStart']
     elif loop_state == 2:
-        strProcedure = iniVal['main_procedure']
+        strProcedure = iniVal['strMain']
     else:
-        strProcedure = iniVal['end_procedure']
+        strProcedure = iniVal['strEnd']
 
     # Width - depending on settings DoubleWidth
     if iniVal['DoubleWidth'] or iniVal['SimDoubleWidth']:
@@ -1038,14 +1039,14 @@ while loop_state < 4:
     escResetStyle()
 
     if loop_state == 1:
-        loop_list = iniVal['start_sequence']
-        loop_repeat = iniVal['start_repeat']
+        loop_list = iniVal['startSequence']
+        loop_repeat = iniVal['startRepeat']
     elif loop_state == 2:
-        loop_list = iniVal['main_sequence']
-        loop_repeat = iniVal['main_repeat']
+        loop_list = iniVal['mainSequence']
+        loop_repeat = iniVal['mainRepeat']
     else:
-        loop_list = iniVal['end_sequence']
-        loop_repeat = iniVal['end_repeat']
+        loop_list = iniVal['endSequence']
+        loop_repeat = iniVal['endRepeat']
 
     for loop in range(loop_repeat):
         # count of elements in loop_list
@@ -1056,25 +1057,25 @@ while loop_state < 4:
             for action in loop_list:
                 action_cnt += 1
                 if action == 'Bl':
-                    action_time = iniVal['blink_time']
-                    action_text_long = TextToLines(iniVal['long_blink'], term_width - (10 + offsetX))
-                    action_text = iniVal['short_blink']
+                    action_time = iniVal['timeBlink']
+                    action_text_long = TextToLines(iniVal['strLongBlink'], term_width - (10 + offsetX))
+                    action_text = iniVal['strShortBlink']
                 elif action == 'Bu':
-                    action_time = iniVal['butterfly_time']
-                    action_text_long = TextToLines(iniVal['long_butterfly'], term_width - (10 + offsetX))
-                    action_text = iniVal['short_butterfly']
+                    action_time = iniVal['timeButterfly']
+                    action_text_long = TextToLines(iniVal['strLongButterfly'], term_width - (10 + offsetX))
+                    action_text = iniVal['strShortButterfly']
                 elif action == '10':
-                    action_time = iniVal['percent10_time']
-                    action_text_long = TextToLines(iniVal['long_10percent'], term_width - (10 + offsetX))
-                    action_text = iniVal['short_10percent']
+                    action_time = iniVal['time10']
+                    action_text_long = TextToLines(iniVal['strLong10'], term_width - (10 + offsetX))
+                    action_text = iniVal['strShort10']
                 elif action == '50':
-                    action_time = iniVal['percent50_time']
-                    action_text_long = TextToLines(iniVal['long_50percent'], term_width - (10 + offsetX))
-                    action_text = iniVal['short_50percent']
+                    action_time = iniVal['time50']
+                    action_text_long = TextToLines(iniVal['strLong50'], term_width - (10 + offsetX))
+                    action_text = iniVal['strShort50']
                 elif action == '80':
-                    action_time = iniVal['percent80_time']
-                    action_text_long = TextToLines(iniVal['long_80percent'], term_width - (10 + offsetX))
-                    action_text = iniVal['short_80percent']
+                    action_time = iniVal['time80']
+                    action_text_long = TextToLines(iniVal['strLong80'], term_width - (10 + offsetX))
+                    action_text = iniVal['strShort80']
                 else:
                     # Unknown action - fatal error
                     escSetColor(cRed, cBg)
@@ -1135,7 +1136,7 @@ while loop_state < 4:
 
                 # Run the timing loop for the specified time 
                 escSetColor(cGreen, cBg)
-                loop_time = run_loop(action_time, iniVal['msg_press_enter_space'], 23 + offsetX, posTime)
+                loop_time = run_loop(action_time, iniVal['msgEnterSpace'], 23 + offsetX, posTime)
                 escResetColor()
 
                 # Clear the timer - text
@@ -1147,21 +1148,21 @@ while loop_state < 4:
                 if ((action_cnt < action_len) or (loop + 1 < loop_repeat)) and not action == '10' and not action == '50':
                     # Pause between actions
                     escSetColor(cBlue, cBg)
-                    if iniVal['automatic']:
-                        # PrintAtPos(iniVal['msg_press_enter_space'], 22, term_height - 5 )
-                        run_loop(iniVal['auto_delay_time'], iniVal['msg_press_enter_space'], 23 + offsetX, posTime)
+                    if iniVal['Automatic']:
+                        # PrintAtPos(iniVal['msgEnterSpace'], 22, term_height - 5 )
+                        run_loop(iniVal['timeAutoDelay'], iniVal['msgEnterSpace'], 23 + offsetX, posTime)
                     else:
-                        PrintAtPos({iniVal['msg_press_enter']}, 23 + offsetX, posTime)
+                        PrintAtPos({iniVal['msgEnter']}, 23 + offsetX, posTime)
                     escResetColor()
 
     # Clear Procedure line
     PrintAtPos(' ' * term_width, 1, cntHeaderLines + 2, 0, term_width)
     if loop_state < 3:
         # Pause between Procedures (Start -> End)
-        if iniVal['automatic']:
-            run_loop(int(iniVal['auto_delay_time'] * 1.5), iniVal['msg_press_enter_space'], 23 + offsetX, posTime)
+        if iniVal['Automatic']:
+            run_loop(int(iniVal['timeAutoDelay'] * 1.5), iniVal['msgEnterSpace'], 23 + offsetX, posTime)
         else:
-            PrintAtPos({iniVal['msg_press_enter']}, 23 + offsetX, posTime)
+            PrintAtPos({iniVal['msgEnter']}, 23 + offsetX, posTime)
 
 
     loop_state += 1
