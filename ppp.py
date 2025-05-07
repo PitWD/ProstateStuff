@@ -34,10 +34,10 @@ cFg = 7
 
 # App
 appName = "Powerful Pee & Potence"
-appVersion = "0.0.9a"
+appVersion = "0.0.10a"
 appAuthor = "github.com/PitWD"
 appCopyright = "(c) GPL by"
-appDate = "06.05.2025"
+appDate = "07.05.2025"
 
 # OS
 iOS = 0  # iOS special (a-shell)
@@ -1067,44 +1067,42 @@ cntDescription = 0
 
 # Get terminal size - final size - no size change recognition during runtime 
 termSize = escGetTerminalSize()
+escCLS()
+
+# print inverted header
+escSetInverted(1)
+if iniVal['Bold']:
+    escSetBold(1)
+strHeader = f"{appName} {appVersion} - {appCopyright} {appAuthor} - {appDate}"
+# Maybe too long
+strHeader = TextToLines(strHeader, termSize.columns)
+# center all lines
+cntHeaderLines = 0
+for i, line in enumerate(strHeader):
+    strHeader[i] = CenterText(line, termSize.columns)
+    PrintAtPos(strHeader[i], 1, i + 1)
+    cntHeaderLines += 1
+escSetInverted(0)
+
+# 001 / 010 - Text positions
+posTime = termSize.lines - (termSize.lines - 24) - 5
+posAction = termSize.lines - (termSize.lines - 24) - 3
+posRepeat = termSize.lines - (termSize.lines - 24) -2
+offsetX = termSize.columns - 80
+if offsetX < -9:
+    offsetX = -9
+elif offsetX > 0:
+    offsetX = 0
+
+# print description/placeholder for loop of loop_repeat  &  action_cnt of action_len  &  action time left 
+PrintAtPos("  Time:", offsetX + 10, posTime)
+PrintAtPos("Action:     /    ", offsetX + 10, posAction)
+PrintAtPos("Repeat:     /    ", offsetX + 10, posRepeat)
+escResetStyle()
 
 # Training Loop
 while loopState < 4:
     
-    escCLS()
-
-    # Text positions
-    posTime = termSize.lines - (termSize.lines - 24) - 5
-    posAction = termSize.lines - (termSize.lines - 24) - 3
-    posRepeat = termSize.lines - (termSize.lines - 24) -2
-    offsetX = termSize.columns - 80
-    if offsetX < -9:
-        offsetX = -9
-    elif offsetX > 0:
-        offsetX = 0
-    
-
-    # print inverted header
-    escSetInverted(1)
-    if iniVal['Bold']:
-        escSetBold(1)
-    strHeader = f"{appName} {appVersion} - {appCopyright} {appAuthor} - {appDate}"
-    # Maybe too long
-    strHeader = TextToLines(strHeader, termSize.columns)
-    # center all lines
-    cntHeaderLines = 0
-    for i, line in enumerate(strHeader):
-        strHeader[i] = CenterText(line, termSize.columns)
-        PrintAtPos(strHeader[i], 1, i + 1)
-        cntHeaderLines += 1
-    escSetInverted(0)
-
-    # print description/placeholder for loop of loop_repeat  &  action_cnt of action_len  &  action time left 
-    PrintAtPos("  Time:", offsetX + 10, posTime)
-    PrintAtPos("Action:     /    ", offsetX + 10, posAction)
-    PrintAtPos("Repeat:     /    ", offsetX + 10, posRepeat)
-    escResetStyle()
-
     # text - actual procedure - Centered double width or standard bold_italic
     if loopState == 1:
         strProcedure = iniVal['strStart']
@@ -1112,22 +1110,20 @@ while loopState < 4:
         strProcedure = iniVal['strMain']
     else:
         strProcedure = iniVal['strEnd']
-
     # Width - depending on settings DoubleWidth
     if iniVal['DoubleWidth'] or iniVal['SimDoubleWidth']:
         termWidthHlp = termSize.columns // 2
     else:
         termWidthHlp = termSize.columns
-
+    # Make multiple lines - if too long
     strProcedure = TextToLines(strProcedure, termWidthHlp)
     # Center all lines
-    cntProcedureLines = 0
-    for i, line in enumerate(strProcedure):
-        strProcedure[i] = CenterText(line, termWidthHlp)
-        cntProcedureLines += 1
-
+    cntProcedureLines = len(strProcedure)
+    for i in range(cntProcedureLines):
+        strProcedure[i] = CenterText(strProcedure[i], termWidthHlp, True, False)
+    # Print the procedure
     if not iniVal['DoubleWidth']:
-        # bold_italic just for simulated and no real-double
+        # bold_italic just for simulated and no double
         if iniVal['Italic']:
             escSetItalic(1)
         if iniVal['Bold']:
@@ -1192,10 +1188,9 @@ while loopState < 4:
 
                 action_text = TextToLines(action_text, termWidthHlp)
                 # Center all lines
-                cntActionLines = 0
-                for i, line in enumerate(action_text):
-                    action_text[i] = CenterText(line, termWidthHlp)
-                    cntActionLines += 1
+                cntActionLines = len(action_text)
+                for i in range(cntActionLines):
+                    action_text[i] = CenterText(action_text[i], termWidthHlp, True, False)
 
                 if not iniVal['DoubleHeight']:
                     # All but real double height
@@ -1215,12 +1210,11 @@ while loopState < 4:
                 escResetStyle()
 
                 # Print the description
-                cntDescription = 0
+                cntDescription = len(action_text_long)
                 if iniVal['Italic']:
                     escSetItalic(1)
-                for i, line in enumerate(action_text_long):
-                    PrintAtPos(line, 10 + offsetX, 4 + cntActionLines + cntHeaderLines + cntProcedureLines + i, termSize.columns - (10 + offsetX))
-                    cntDescription += 1
+                for i in range(cntDescription):
+                    PrintAtPos(action_text_long[i], 10 + offsetX, 4 + cntActionLines + cntHeaderLines + cntProcedureLines + i, termSize.columns - (10 + offsetX))
                 
                 if cntDescription > cntMaxDescription:
                     cntMaxDescription = cntMaxDescription
