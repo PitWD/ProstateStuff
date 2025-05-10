@@ -8,6 +8,14 @@ class TXTcolor:
         self._b = 0
 
     @property
+    def type(self):
+        return self._type
+    @type.setter
+    def type(self, value):
+        if value in (16, 255, 24):
+            self._type = value
+
+    @property
     def r(self):
         return self._r
     @r.setter
@@ -50,6 +58,16 @@ class TXTcolor:
     def color(self, value):
         self.r = value
 
+    @property
+    def rgb(self):
+        return (self._r, self._g, self._b)
+    @rgb.setter
+    def rgb(self, red, green, blue):
+        if self._type == 24:
+            self.r = red
+            self.g = green
+            self.b = blue
+
 class TXTstyle:
     def __init__(self):
         self._bold = False
@@ -74,10 +92,7 @@ class TXTstyle:
         self._simDblWidth = False
         self._blink = False
         self._blinkFast = False
-        self.fg = TXTcolor()               # foreground color
-        self.bg = TXTcolor()               # background color
-        self.ul = TXTcolor()               # underline color (255 & rgb)
-
+        self._boxMode = False
 
 class Cursor:
     def __init__(self):
@@ -91,19 +106,13 @@ class Terminal:
         self._height = 24
         self._raw = False
         self._echo = True
-        self._canDblHeight = False
-        self._simDblHeight = False
-        self._canDblWidth = False
-        self._simDblWidth = False
-        self._canBold = False
-        self._canItalic = False
-        self._canUnderline = False
-        self._canDblUnderline = False
-        self._canCurlUnderline = False
-        self._canOverline = False
-        self._canStrikethrough = False
-        self._canSubscript = False
-        self._canSuperscript = False
         self._iOS = False               # a synonym for crashed Linux-VT
         self._aShell = False            # running in a-shell (activates iOS)
+        self._cursor = Cursor()         # cursor position
+        self._canStyle = TXTstyle()     # style capabilities
+        self._style = TXTstyle()        # current style
+        self._fg = TXTcolor()           # foreground color
+        self._bg = TXTcolor()           # background color
+        self._ul = TXTcolor()           # underline color (255 & rgb)
+
                 
